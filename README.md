@@ -9,8 +9,10 @@ once, on messenger.com and facebook.com/messages.
 - `js/shared/page-parts.js`: the parts of Messenger's page it uses (chat list, rows, menu button, menus,
   windows), each with built-in ways to find it, best first; and the chat menu's items, found by icon, then by
   English label.
-- `js/content/`: runs on Messenger. `actions.js` does the chosen action on one chat at a time, the way a person
-  would, and checks that Messenger did it. `main.js` talks to the popup over a port: it sends the loaded chats
+- `js/content/`: runs on Messenger. `actions.js` does the chosen action in one of two modes, picked in the popup:
+  **Safe mode** (the default) does one chat at a time, the way a person would, and checks that Messenger did it;
+  **Fast mode** does every chat at once, like versions before 1.1, and can only check archive, unarchive and
+  delete chat by chat. `main.js` talks to the popup over a port: it sends the loaded chats
   whenever they change, and the job's progress.
 - `js/index.js`: the popup.
 - `js/background.js`: downloads `rules/page-rules.json` from this repo's `main` branch, so a fix for a Messenger
@@ -32,7 +34,7 @@ const ask = (request) => new Promise((resolve) => {
 	dispatchEvent(new CustomEvent("batch-actions-test", { detail: JSON.stringify(request) }));
 });
 await ask({ type: "list" });                                        // the loaded chats
-await ask({ type: "run", action: "mute", links: ["/t/123/"], options: { mute_type: 0, mute_time: 0 } });
+await ask({ type: "run", action: "mute", links: ["/t/123/"], options: { mute_type: 0, mute_time: 0 }, mode: "safe" });
 await ask({ type: "job" });                                         // progress
 await ask({ type: "report" });
 await ask({ type: "try_rules", rules: { format: 1, version: "try", parts: {} } });  // try a fix before pushing it

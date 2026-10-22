@@ -353,3 +353,23 @@ input {
 		animation: spin 1s linear infinite;
 	}
 }
+/* Safe mode / Fast mode */
+main .mode-switch {
+	display: flex;
+	gap: 0.3rem;
+	button {
+		flex: 1;
+		gap: 0.3rem;
+		opacity: 0.5;
+		font-size: 0.7rem;
+		svg {
+			width: 14px;
+			height: 14px;
+		}
+	}
+	button.mode-on {
+		opacity: 1;
+		border-color: var(--links);
+		background-color: var(--dark-bg);
+	}
+}

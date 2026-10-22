@@ -1,8 +1,9 @@
 // Connects the page to the popup. The popup opens a port named "batch-actions"; while it's open, this sends the
 // loaded chats whenever they change, and the job's progress. Requests from the popup:
 //   { type: "list" }                               sends the chats again
-//   { type: "run", action, links, options }        starts a job (see actions.js)
+//   { type: "run", action, links, options, mode }  starts a job (see actions.js)
 //   { type: "stop" }                               stops the job after the current chat
+//   { type: "dismiss" }                            the popup's OK on a finished job: stop sending it
 //   { type: "load_more" }                          scrolls Messenger's list so it loads more chats
 //   { type: "report" }                             sends the page side of the report
 //   { type: "job" }                                sends the job's progress again
@@ -36,6 +37,9 @@ function handle_request(request, reply) {
 		case "stop":
 			stop_job();
 			break;
+		case "dismiss":
+			dismiss_job();
+			break;
 		case "load_more":
 			load_more_chats().then(
 				(ok) => reply({ type: "load_more", ok }),
@@ -62,7 +66,7 @@ chrome.runtime.onConnect.addListener(
 		popup_ports.add(port);
 		ChatWatch.start((chats, source) => send_to_popups(chats_message(chats, source)));
 		port.postMessage(chats_message());
-		if (Job.current) port.postMessage({ type: "job", job: job_summary(Job.current) });
+		if (Job.current && !Job.current.dismissed) port.postMessage({ type: "job", job: job_summary(Job.current) });
 		port.onMessage.addListener(guarded("popup request", (request) => handle_request(request, (message) => port.postMessage(message))));
 		port.onDisconnect.addListener(() => {
 			popup_ports.delete(port);

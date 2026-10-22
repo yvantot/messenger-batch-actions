@@ -79,7 +79,7 @@ const POPUPS = {
 					block_outside: true,
 					exitable: true,
 					title: "FAQ",
-					description: `How to (insert action here) multiple chats?<br/>- Open Messenger, open this extension, select the chats, and click the action (archive, delete, etc). Need older chats? Click the arrow to load more. It works on one chat at a time, and keeps going if you close this.<br/><br/>Is my data safe?<br/>- Yes. Nothing about you or your chats leaves your device. The only thing it downloads is a small file of page rules from GitHub, so it keeps working when Messenger changes its page.<br/><br/>The (insert action here) doesn't work properly<br/>- Reload Messenger and try again. If it still doesn't, use Report issues: it can check for fixes, and copy a report for your email.`,
+					description: `How to (insert action here) multiple chats?<br/>- Open Messenger, open this extension, select the chats, and click the action (archive, delete, etc). Need older chats? Click the arrow to load more. Safe mode does one chat at a time and checks each one; Fast mode does them all at once, which is quicker but can miss some. Either keeps going if you close this.<br/><br/>Is my data safe?<br/>- Yes. Nothing about you or your chats leaves your device. The only thing it downloads is a small file of page rules from GitHub, so it keeps working when Messenger changes its page.<br/><br/>The (insert action here) doesn't work properly<br/>- Reload Messenger and try again. If it still doesn't, use Report issues: it can check for fixes, and copy a report for your email.`,
 					action: "Close",
 					icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M478-240q21 0 35.5-14.5T528-290q0-21-14.5-35.5T478-340q-21 0-35.5 14.5T428-290q0 21 14.5 35.5T478-240Zm-36-154h74q0-33 7.5-52t42.5-52q26-26 41-49.5t15-56.5q0-56-41-86t-97-30q-57 0-92.5 30T342-618l66 26q5-18 22.5-39t53.5-21q32 0 48 17.5t16 38.5q0 20-12 37.5T506-526q-44 39-54 59t-10 73Zm38 314q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>',
 					width: 90,
@@ -128,6 +128,8 @@ const state = {
 	search: "",
 	job: null,
 	job_dismissed: false,
+	// "safe" (one chat at a time) or "fast" (all at once), saved as mode
+	mode: "safe",
 	// Resolves the pending report request
 	report_waiting: null,
 };
@@ -147,6 +149,7 @@ function get_popup_elements() {
 		JOB_PROBLEMS: document.getElementById("job-problems"),
 		JOB_STOP: document.getElementById("job-stop"),
 		JOB_CLOSE: document.getElementById("job-close"),
+		MODE: document.getElementById("mode"),
 	};
 }
 
@@ -334,10 +337,21 @@ function selected_names() {
 // ---------- jobs ----------
 
 function run(action, links, options = {}) {
-	if (!send({ type: "run", action, links, options })) return;
+	if (!send({ type: "run", action, links, options, mode: state.mode })) return;
 	state.job_dismissed = false;
-	state.job = { action, total: links.length, position: 0, done: 0, problems: [], running: true, stopping: false, seconds: 0 };
+	state.job = { action, mode: state.mode, total: links.length, position: 0, done: 0, problems: [], running: true, stopping: false, seconds: 0 };
 	render_job();
+}
+
+async function load_mode() {
+	const { mode } = await chrome.storage.local.get("mode");
+	state.mode = mode === "fast" ? "fast" : "safe";
+	render_mode();
+}
+
+function render_mode() {
+	const { MODE } = get_popup_elements();
+	MODE.querySelectorAll("button").forEach((button) => button.classList.toggle("mode-on", button.dataset.mode === state.mode));
 }
 
 function render_job() {
@@ -350,7 +364,9 @@ function render_job() {
 	}
 	const action = MENU_ACTIONS[job.action];
 	JOB.classList.remove("no-display");
-	if (job.running) {
+	if (job.running && job.mode === "fast") {
+		JOB_TEXT.textContent = `${action.doing} ${job.total} ${job.total === 1 ? "chat" : "chats"} at once...`;
+	} else if (job.running) {
 		JOB_TEXT.textContent = job.stopping
 			? "Stopping after this chat..."
 			: `${action.doing} ${Math.max(job.position, 1)} of ${job.total}...`;
@@ -437,7 +453,7 @@ async function check_for_fixes() {
 // ---------- buttons ----------
 
 function append_el_listeners() {
-	const { CHATS_LIST, CHATS_ACTIONS, CHATS_ACTIONS_ADDITIONAL, ISSUES, HELP, SEARCH_INPUT, JOB_STOP, JOB_CLOSE } =
+	const { CHATS_LIST, CHATS_ACTIONS, CHATS_ACTIONS_ADDITIONAL, ISSUES, HELP, SEARCH_INPUT, JOB_STOP, JOB_CLOSE, MODE } =
 		get_popup_elements();
 
 	SEARCH_INPUT.addEventListener("input", ({ target }) => {
@@ -459,9 +475,19 @@ function append_el_listeners() {
 	});
 
 	JOB_STOP.addEventListener("click", () => send({ type: "stop" }));
+	// Messenger keeps the finished job to show it when the popup reopens, until it's dismissed here
 	JOB_CLOSE.addEventListener("click", () => {
 		state.job_dismissed = true;
+		if (state.port) state.port.postMessage({ type: "dismiss" });
 		render_job();
+	});
+
+	MODE.addEventListener("click", ({ target }) => {
+		const button = target.closest("button");
+		if (!button) return;
+		state.mode = button.dataset.mode === "fast" ? "fast" : "safe";
+		chrome.storage.local.set({ mode: state.mode });
+		render_mode();
 	});
 
 	CHATS_ACTIONS.addEventListener("click", ({ target }) => {
@@ -814,4 +840,5 @@ function remind_user() {
 remind_user();
 tooltip_init();
 append_el_listeners();
+load_mode();
 connect();

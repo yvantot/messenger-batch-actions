@@ -1,11 +1,17 @@
-// Runs an action on chats one at a time, the way a person would: open the chat's menu, pick the item, answer any
-// window that asks, and wait for Messenger to finish before going to the next chat. Menus and windows are hidden
-// while it runs. The job keeps going if the popup closes; the popup shows it again when it's opened.
+// Runs an action on chats, in one of two modes picked in the popup:
+// - Safe mode (the default) does one chat at a time, the way a person would: open the chat's menu, pick the item,
+//   answer any window that asks, and check Messenger did it before going to the next chat.
+// - Fast mode does them all at once, the way this extension worked before 1.1: every chat's menu opens, the item
+//   is clicked in each, then every window is answered together. Much quicker, but Messenger can miss some, and
+//   only archive, unarchive and delete can be checked chat by chat afterwards.
+// Menus and windows are hidden while it runs. The job keeps going if the popup closes; the popup shows it again
+// when it's opened, until it's dismissed there.
 
 const STEP_TIMEOUT = 6000;
 
 const Job = {
-	// { action, total, position, done, problems: [{ name, problem }], running, stop, started, finished }
+	// { action, mode, total, position, done, problems: [{ name, problem }], running, stop, started, finished,
+	//   dismissed }
 	current: null,
 	// Called with the job after every change
 	on_change: null,
@@ -26,15 +32,16 @@ async function wait_for(get, timeout = STEP_TIMEOUT) {
 	return null;
 }
 
-// Starts `action` on the chats at `links` (paths, as list_chats gives them). Returns false when a job is already
-// running or the request isn't valid.
-function start_job({ action, links, options }) {
+// Starts `action` on the chats at `links` (paths, as list_chats gives them), in `mode` ("safe" or "fast").
+// Returns false when a job is already running or the request isn't valid.
+function start_job({ action, links, options, mode }) {
 	if (Job.current?.running) return false;
 	if (!Object.hasOwn(MENU_ACTIONS, action) || !Array.isArray(links) || !links.length) return false;
 	const names = new Map((list_chats() ?? []).map((chat) => [chat.link, chat.name]));
 	const chats = [...new Set(links)].filter((link) => typeof link === "string").map((link) => ({ link, name: names.get(link) ?? "A chat" }));
 	Job.current = {
 		action,
+		mode: mode === "fast" ? "fast" : "safe",
 		total: chats.length,
 		position: 0,
 		done: 0,
@@ -43,9 +50,16 @@ function start_job({ action, links, options }) {
 		stop: false,
 		started: Date.now(),
 		finished: null,
+		dismissed: false,
 	};
-	run_job(Job.current, chats, clean_options(options));
+	const run = Job.current.mode === "fast" ? run_fast : run_safe;
+	run(Job.current, chats, clean_options(options));
 	return true;
+}
+
+// The popup's OK on a finished job: it's not sent again when the popup reopens.
+function dismiss_job() {
+	if (Job.current && !Job.current.running) Job.current.dismissed = true;
 }
 
 function stop_job() {
@@ -70,6 +84,7 @@ function clean_options(options = {}) {
 function job_summary(job, with_names = true) {
 	return {
 		action: job.action,
+		mode: job.mode,
 		total: job.total,
 		position: job.position,
 		done: job.done,
@@ -88,7 +103,8 @@ function job_changed(job) {
 	}
 }
 
-async function run_job(job, chats, options) {
+// Safe mode: one chat at a time.
+async function run_safe(job, chats, options) {
 	const dialogs_before = new Set(Parts.all("dialog"));
 	hide_menus_and_dialogs(true);
 	try {
@@ -183,10 +199,14 @@ async function run_on_chat(action, href, options) {
 	return { problem: "unknown action" };
 }
 
-// Mute asks what to mute (for most chats), then for how long, in the same window.
-async function mute_chat(new_dialog, { mute_type, mute_time }) {
+async function mute_chat(new_dialog, options) {
 	const dialog = await wait_for(new_dialog);
 	if (!dialog) return untouched("the mute window didn't open");
+	return mute_dialog(dialog, options);
+}
+
+// Mute asks what to mute (for most chats), then for how long, in the same window.
+async function mute_dialog(dialog, { mute_type, mute_time }) {
 	const choices_at_least = (count) =>
 		wait_for(() => {
 			const choices = Parts.all("dialog_choice", dialog);
@@ -234,6 +254,120 @@ async function block_chat(new_dialog, dialogs_before, { block_type }) {
 	await sleep(300);
 	if (choice.isConnected) close_dialog(choice);
 	return closed ? {} : { problem: "Messenger didn't block it" };
+}
+
+// ---------- fast mode ----------
+
+// Fast mode: every chat at once.
+async function run_fast(job, chats, options) {
+	const dialogs_before = new Set(Parts.all("dialog"));
+	hide_menus_and_dialogs(true);
+	try {
+		job.position = job.total;
+		job_changed(job);
+		await close_menus();
+
+		const found = [];
+		for (const chat of chats) {
+			const row = find_row(chat.link);
+			const button = row && Parts.first("menu_button", row);
+			if (!row) job.problems.push({ name: chat.name, problem: "it's not in Messenger's list anymore" });
+			else if (!button) {
+				Parts.missing("menu_button");
+				job.problems.push({ name: chat.name, problem: "its menu button wasn't found" });
+			} else found.push(chat);
+		}
+		found.forEach((chat) => Parts.first("menu_button", find_row(chat.link)).click());
+		await wait_for(() => Parts.all("menu").length >= found.length, 4000);
+		await sleep(300);
+
+		let clicked = 0;
+		for (const menu of Parts.all("menu")) {
+			const item = Parts.menu_item(menu, job.action);
+			if (item) {
+				item.click();
+				clicked++;
+			} else log_event("step", `${job.action}: no item for it in a menu of ${describe_menu(menu)}`);
+		}
+		const answered = await answer_all(job.action, clicked, dialogs_before, options);
+		await count_fast(job, found, answered);
+	} catch (error) {
+		log_error(job.action, error);
+	} finally {
+		await close_leftovers(dialogs_before).catch(() => {});
+		hide_menus_and_dialogs(false);
+		job.running = false;
+		job.finished = Date.now();
+		job_changed(job);
+	}
+}
+
+// Answers every window the clicked menu items opened, all together. Resolves with how many went through.
+async function answer_all(action, clicked, dialogs_before, options) {
+	if (!clicked || ["archive", "unarchive", "unmute"].includes(action)) return clicked;
+	const new_dialogs = () => Parts.all("dialog").filter((dialog) => !dialogs_before.has(dialog));
+	const confirm_all = async (dialogs) => {
+		const results = await Promise.all(dialogs.map(async (dialog) => (await click_confirm(dialog)) && wait_closed(dialog)));
+		return results.filter(Boolean).length;
+	};
+	await wait_for(() => new_dialogs().length >= clicked, 4000);
+	await sleep(300);
+	const dialogs = new_dialogs();
+
+	switch (action) {
+		case "delete":
+		case "leave":
+			return confirm_all(dialogs);
+		case "mute": {
+			const results = await Promise.all(dialogs.map((dialog) => mute_dialog(dialog, options)));
+			return results.filter((result) => !result.problem).length;
+		}
+		case "block": {
+			// Pick the kind of block in every window, then confirm every window that comes after
+			await Promise.all(
+				dialogs.map(async (dialog) => {
+					const buttons = await wait_for(() => {
+						const found = visible_buttons(dialog);
+						return found.length >= 3 ? found : null;
+					});
+					buttons?.[options.block_type + 1].click();
+				}),
+			);
+			const confirms = () => new_dialogs().filter((dialog) => !dialogs.includes(dialog));
+			await wait_for(() => confirms().length >= dialogs.length, 4000);
+			await sleep(300);
+			const answered = await confirm_all(confirms());
+			await sleep(300);
+			dialogs.forEach((dialog) => dialog.isConnected && close_dialog(dialog));
+			return answered;
+		}
+	}
+	return 0;
+}
+
+// Fast mode can't tell which chat a menu or window belonged to. Archive, unarchive and delete are checked chat
+// by chat (the chat leaves the list); for the rest, the chats that didn't go through are counted.
+async function count_fast(job, found, answered) {
+	if (["archive", "unarchive", "delete"].includes(job.action)) {
+		await wait_for(() => found.every((chat) => !find_chat_link(chat.link)), 4000);
+		for (const chat of found) {
+			if (find_chat_link(chat.link)) job.problems.push({ name: chat.name, problem: "Messenger missed it (Safe mode checks each chat)" });
+			else job.done++;
+		}
+		return;
+	}
+	job.done = Math.min(answered, found.length);
+	const missed = found.length - job.done;
+	if (missed) {
+		const label = MENU_ACTIONS[job.action].label.toLowerCase();
+		job.problems.push({
+			name: `${missed} ${missed === 1 ? "chat" : "chats"}`,
+			problem:
+				missed === 1
+					? `Messenger missed it, or it has no ${label} option (Safe mode checks each chat)`
+					: `Messenger missed them, or they have no ${label} option (Safe mode checks each chat)`,
+		});
+	}
 }
 
 // ---------- menus and windows ----------
