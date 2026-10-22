@@ -1,7 +1,8 @@
 # Chrome Web Store listing
 
 Everything to fill in the [developer dashboard](https://chrome.google.com/webstore/devconsole), tab by tab, for the 1.1.0
-update. The images are in `store/media/`. To redraw them after a popup change, run `python store/render.py`.
+update. The images are in `store/media/`. To redraw them after a popup change, run `python store/render.py`; after a
+logo change (`assets/logo.svg`), add `--icons` to redraw the extension's icons too.
 
 ## Package
 
