@@ -96,12 +96,12 @@ async function run_job(job, chats, options) {
 			if (job.stop) break;
 			job.position++;
 			job_changed(job);
-			let result;
-			try {
-				result = await run_on_chat(job.action, chat.link, options);
-			} catch (error) {
-				log_error(job.action, error);
-				result = { problem: "something went wrong" };
+			let result = await try_chat(job.action, chat.link, options);
+			// Nothing was done to the chat yet, so it's safe to try once more: Messenger is often just slow
+			if (result.retry && !job.stop) {
+				await close_leftovers(dialogs_before);
+				await sleep(1000);
+				result = await try_chat(job.action, chat.link, options);
 			}
 			if (result.problem) job.problems.push({ name: chat.name, problem: result.problem });
 			else job.done++;
@@ -118,18 +118,35 @@ async function run_job(job, chats, options) {
 	}
 }
 
+async function try_chat(action, href, options) {
+	try {
+		return await run_on_chat(action, href, options);
+	} catch (error) {
+		log_error(action, error);
+		return { problem: "something went wrong" };
+	}
+}
+
+// A problem from before anything was done to the chat, so it can be tried again.
+function untouched(problem) {
+	return { problem, retry: true };
+}
+
 // Does `action` on one chat. Resolves with {} when it worked, or { problem } saying what went wrong.
 async function run_on_chat(action, href, options) {
 	const row = find_row(href);
 	if (!row) return { problem: "it's not in Messenger's list anymore" };
 	if (!Parts.first("menu_button", row)) {
 		Parts.missing("menu_button");
-		return { problem: "its menu button wasn't found" };
+		return untouched("its menu button wasn't found");
 	}
 	const menu = await open_menu(row);
-	if (!menu) return { problem: "its menu didn't open" };
+	if (!menu) return untouched("its menu didn't open");
 	const item = Parts.menu_item(menu, action);
-	if (!item) return { problem: `its menu has no ${MENU_ACTIONS[action].label.toLowerCase()} option` };
+	if (!item) {
+		log_event("step", `${action}: no item for it in a menu of ${describe_menu(menu)}`);
+		return { problem: `its menu has no ${MENU_ACTIONS[action].label.toLowerCase()} option` };
+	}
 
 	const dialogs_before = new Set(Parts.all("dialog"));
 	const new_dialog = () => Parts.all("dialog").find((dialog) => !dialogs_before.has(dialog));
@@ -152,7 +169,7 @@ async function run_on_chat(action, href, options) {
 		case "delete":
 		case "leave": {
 			const dialog = await wait_for(new_dialog);
-			if (!dialog) return { problem: "the confirm window didn't open" };
+			if (!dialog) return untouched("the confirm window didn't open");
 			if (!(await click_confirm(dialog))) return { problem: "the confirm window has no confirm button" };
 			if (!(await wait_closed(dialog))) return { problem: "Messenger didn't confirm it" };
 			if (action === "delete" && !(await gone())) return { problem: "Messenger didn't delete it" };
@@ -169,7 +186,7 @@ async function run_on_chat(action, href, options) {
 // Mute asks what to mute (for most chats), then for how long, in the same window.
 async function mute_chat(new_dialog, { mute_type, mute_time }) {
 	const dialog = await wait_for(new_dialog);
-	if (!dialog) return { problem: "the mute window didn't open" };
+	if (!dialog) return untouched("the mute window didn't open");
 	const choices_at_least = (count) =>
 		wait_for(() => {
 			const choices = Parts.all("dialog_choice", dialog);
@@ -179,7 +196,8 @@ async function mute_chat(new_dialog, { mute_type, mute_time }) {
 	let choices = await choices_at_least(3);
 	if (!choices) {
 		Parts.missing("dialog_choice");
-		return { problem: "the mute window has no choices" };
+		log_event("step", `mute: the window had ${describe_dialog(dialog)}; ${Parts.all("dialog").length} windows open`);
+		return untouched("the mute window has no choices");
 	}
 	if (choices.length === 3) {
 		choices[mute_type].click();
@@ -198,19 +216,19 @@ async function mute_chat(new_dialog, { mute_type, mute_time }) {
 // open afterwards, so it's closed here.
 async function block_chat(new_dialog, dialogs_before, { block_type }) {
 	const choice = await wait_for(new_dialog);
-	if (!choice) return { problem: "the block window didn't open" };
+	if (!choice) return untouched("the block window didn't open");
 	// The first button is the window's close button, then one per kind of block
 	const options = await wait_for(() => {
 		const buttons = visible_buttons(choice);
 		return buttons.length >= 3 ? buttons : null;
 	});
-	if (!options) return { problem: "the block window has no choices" };
+	if (!options) return untouched("the block window has no choices");
 	options[block_type + 1].click();
 
 	const confirm = await wait_for(() =>
 		Parts.all("dialog").find((dialog) => !dialogs_before.has(dialog) && dialog !== choice),
 	);
-	if (!confirm) return { problem: "the confirm window didn't open" };
+	if (!confirm) return untouched("the confirm window didn't open");
 	const clicked = await click_confirm(confirm);
 	const closed = clicked && (await wait_closed(confirm));
 	await sleep(300);
@@ -219,6 +237,20 @@ async function block_chat(new_dialog, dialogs_before, { block_type }) {
 }
 
 // ---------- menus and windows ----------
+
+// For the report: a menu's item labels, cut short and without numbers (times), and nothing else. Menu labels are
+// Messenger's own words, not chat names.
+function describe_menu(menu) {
+	const items = Parts.all("menu_item", menu).map((item) => item.textContent.replace(/\d/g, "").trim().slice(0, 24));
+	return `${items.length} items (${items.join(" / ")})`;
+}
+
+// For the report: what's in a window, in counts only (its text can have chat names).
+function describe_dialog(dialog) {
+	const choices = Parts.all("dialog_choice", dialog).length;
+	const buttons = Parts.all("dialog_button", dialog).length;
+	return `${choices} choices, ${buttons} buttons (${visible_buttons(dialog).length} usable), ${dialog.querySelectorAll("input").length} inputs`;
+}
 
 // Messenger renders each window button twice, one copy hidden and disabled. The ones that count are visible and
 // enabled: [close, ...choices or cancel, confirm], with confirm last.
