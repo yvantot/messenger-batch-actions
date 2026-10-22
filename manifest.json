@@ -3,12 +3,19 @@
     "name": "Messenger Batch Actions",
     "short_name": "Messenger Tools",
     "author": "Jun Ivanne Dalman",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "description": "Multiple chats archive, delete, or mute at once to keep your Messenger clean",
     "homepage_url": "https://yvantot.github.io/index/",
-    "permissions": [],
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting"
+    ],
+    "background": {
+        "service_worker": "js/background.js"
+    },
     "action": {
-        "default_popup": "./html/index.html",
+        "default_popup": "html/index.html",
         "default_title": "Messenger Batch Actions"
     },
     "icons": {
@@ -20,7 +27,12 @@
     "content_scripts": [
         {
             "js": [
-                "./js/site-control-script.js"
+                "js/shared/page-parts.js",
+                "js/content/report.js",
+                "js/content/parts.js",
+                "js/content/chats.js",
+                "js/content/actions.js",
+                "js/content/main.js"
             ],
             "matches": [
                 "https://www.messenger.com/*",

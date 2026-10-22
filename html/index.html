@@ -7,6 +7,7 @@
 		<meta name="description" content="Multiple chats archive, delete, or mute at once to keep your Messenger clean" />
 		<meta name="author" content="Jun Ivanne Dalman" />
 		<link rel="stylesheet" href="../css/index.css" />
+		<script defer src="../js/shared/page-parts.js"></script>
 		<script defer src="../js/index.js"></script>
 	</head>
 	<body>
@@ -65,6 +66,9 @@
 						<button data-action="sortby-name" data-order="ascending" data-tooltip="Sort-by">
 							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="m80-280 150-400h86l150 400h-82l-34-96H196l-32 96H80Zm140-164h104l-48-150h-6l-50 150Zm328 164v-76l202-252H556v-72h282v76L638-352h202v72H548ZM360-760l120-120 120 120H360ZM480-80 360-200h240L480-80Z" /></svg>
 						</button>
+						<button data-action="load-more" data-tooltip="Load more chats">
+							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M480-200 240-440l56-56 184 183 184-183 56 56-240 240Zm0-240L240-680l56-56 184 183 184-183 56 56-240 240Z" /></svg>
+						</button>
 						<button data-action="refresh-chats" data-tooltip="Refresh Chats">
 							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z" /></svg>
 						</button>
@@ -77,6 +81,14 @@
 			</section>
 			<input type="text" id="search-chats" class="no-display" />
 			<h2 id="chat-source">Loading...</h2>
+			<!-- Progress of the running action -->
+			<section id="job" class="job no-display">
+				<p id="job-text"></p>
+				<div class="job-bar"><span id="job-bar-fill"></span></div>
+				<ul id="job-problems"></ul>
+				<button id="job-stop">Stop</button>
+				<button id="job-close" class="no-display">OK</button>
+			</section>
 			<!-- Selection -->
 			<section class="chats-container">
 				<section class="chats-list"></section>
