@@ -76,12 +76,12 @@ Remove the old screenshots before adding these, so the new popup is what people 
   Messenger Batch Actions is a free Chrome extension that archives, unarchives, mutes, unmutes, deletes, leaves or blocks many Messenger chats at once, on messenger.com and facebook.com/messages.
 
   In this demo:
-  0:00 Open it on Messenger and pick chats
-  0:10 Safe mode: one chat at a time, each one checked
-  0:18 Fast mode: all at once
-  0:27 Mute for as long as you like
-  0:38 Search, select all, load older chats
-  0:50 Delete, leave or block, with a confirm first
+  0:00 Pick the chats
+  0:05 Safe mode: one chat at a time, each one checked
+  0:12 Fast mode: all at once
+  0:19 Mute anyone (yes, even Jerry)
+  0:28 Search, and load older chats
+  0:34 Delete for good, with a confirm first
 
   Nothing about your chats leaves your device. Not made by or affiliated with Meta. Chat names are from Rick and Morty, for fun.
   ```
