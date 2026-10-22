@@ -8,9 +8,6 @@
 	<script src="stage.js"></script>
 </head>
 <body>
-	<div class="stars"></div>
-	<div class="halftone"></div>
-
 	<div id="window" class="window">
 		<div class="bar">
 			<i></i><i></i><i></i>
@@ -23,29 +20,29 @@
 				<div class="search">Search Messenger</div>
 				<div id="rows" class="rows"></div>
 			</div>
-			<!-- The spotlight: whatever isn't what to look at dims (focus() in stage.js) -->
+			<!-- The spotlight: whatever isn't what to look at fades back (focus() in stage.js) -->
 			<div id="dim-list" class="dim"></div>
 			<div class="main">
-				<div class="header"><span class="av" style="background: #4bb4c9">R</span><div class="name">Rick Sanchez</div></div>
+				<div class="header"><span class="av" style="background: #f48fb1">M</span><div class="name">Mom</div></div>
 				<div id="messages" class="messages"></div>
-				<div class="composer">Aa</div>
+				<div id="composer" class="composer">Aa</div>
 				<div id="dim-chat" class="dim"></div>
 			</div>
 		</div>
 	</div>
 
-	<!-- The real popup, framed like a comic panel -->
+	<!-- The real popup, as Chrome shows it under the toolbar -->
 	<div id="popup-frame" class="popup-frame">
 		<iframe id="popup" class="popup" src="../../html/index.html"></iframe>
 		<div id="dim-popup" class="dim"></div>
 	</div>
 
-	<!-- What's shown, top left; the name, top right, all the way through instead of a title card -->
-	<div id="caption" class="caption"><span id="caption-number" class="number"></span><span id="caption-text"></span></div>
+	<!-- What's happening, top left; the name, top right, all the way through -->
+	<div id="caption" class="caption"></div>
 	<div class="brand"><img src="../../assets/logo.svg" alt="" /><span>Messenger Batch Actions</span></div>
 
-	<svg id="cursor" class="cursor" viewBox="0 0 24 24" width="34" height="34">
-		<path d="M4 2 L4 19 L8.5 14.8 L11.6 21.6 L14.6 20.3 L11.5 13.6 L17.6 13.6 Z" fill="#fff" stroke="#0d0d12" stroke-width="1.8" stroke-linejoin="round" />
+	<svg id="cursor" class="cursor" viewBox="0 0 24 24" width="30" height="30">
+		<path d="M4 2 L4 19 L8.5 14.8 L11.6 21.6 L14.6 20.3 L11.5 13.6 L17.6 13.6 Z" fill="#1f2330" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" />
 	</svg>
 </body>
 </html>
