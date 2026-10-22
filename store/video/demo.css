@@ -1,0 +1,278 @@
+/* The demo video's stage: 1280x720, recorded at 1.5x for 1080p (record.py). */
+@font-face {
+	font-family: Quicksand;
+	src: url("../../assets/Quicksand.ttf") format("truetype");
+}
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+body {
+	position: relative;
+	width: 1280px;
+	height: 720px;
+	overflow: hidden;
+	background: linear-gradient(135deg, #e7edfb 0%, #f1ecfa 100%);
+	color: #1d2433;
+	font-family: Quicksand, Arial, sans-serif;
+}
+
+/* ---------- caption ---------- */
+.caption {
+	position: absolute;
+	top: 16px;
+	left: 40px;
+	right: 40px;
+	height: 40px;
+	font-size: 26px;
+	font-weight: 700;
+	line-height: 40px;
+	text-align: center;
+}
+
+/* ---------- Messenger ---------- */
+.window {
+	position: absolute;
+	top: 70px;
+	left: 40px;
+	box-shadow: 0 24px 60px rgba(40, 50, 90, 0.22);
+	border-radius: 14px;
+	background: #1c1d1f;
+	width: 1200px;
+	height: 630px;
+	overflow: hidden;
+}
+.bar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: #2a2b2e;
+	padding: 0 14px;
+	height: 44px;
+	i {
+		border-radius: 50%;
+		background: #4a4c51;
+		width: 12px;
+		height: 12px;
+	}
+	.address {
+		margin-left: 14px;
+		border-radius: 14px;
+		background: #1c1d1f;
+		padding: 5px 14px;
+		width: 380px;
+		color: #9aa0aa;
+		font-size: 13px;
+	}
+	.extension {
+		margin-left: auto;
+		border-radius: 50%;
+		background: url("../../assets/icons/icon32.png") center / 22px no-repeat;
+		width: 32px;
+		height: 32px;
+	}
+	.extension.open {
+		background-color: #3a3c40;
+	}
+}
+.app {
+	display: flex;
+	height: calc(100% - 44px);
+	color: #e8e9eb;
+}
+.sidebar {
+	display: flex;
+	flex-direction: column;
+	border-right: 1px solid #2e3034;
+	padding: 16px 10px 0;
+	width: 360px;
+	h2 {
+		margin: 0 8px 10px;
+		font-size: 22px;
+		font-weight: 700;
+	}
+	.search {
+		margin: 0 8px 10px;
+		border-radius: 18px;
+		background: #2a2b2e;
+		padding: 0 14px;
+		height: 34px;
+		color: #8a9099;
+		font-size: 13px;
+		line-height: 34px;
+	}
+}
+.rows {
+	flex: 1;
+	overflow: hidden;
+}
+.row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	border-radius: 10px;
+	padding: 0 8px;
+	height: 54px;
+	overflow: hidden;
+	.av {
+		width: 42px;
+		height: 42px;
+	}
+	.text {
+		flex: 1;
+		min-width: 0;
+	}
+	.name {
+		font-size: 15px;
+		font-weight: 600;
+	}
+	.preview {
+		overflow: hidden;
+		color: #9aa0aa;
+		font-size: 13px;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.muted {
+		display: none;
+		flex-shrink: 0;
+		width: 18px;
+		height: 18px;
+		color: #9aa0aa;
+	}
+}
+.row.is-muted .muted {
+	display: block;
+}
+.row.picked {
+	background: rgba(84, 140, 240, 0.18);
+}
+.av {
+	display: grid;
+	flex-shrink: 0;
+	place-items: center;
+	border-radius: 50%;
+	color: #fff;
+	font-weight: 700;
+}
+.main {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	.header {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		border-bottom: 1px solid #2e3034;
+		padding: 12px 18px;
+		.av {
+			width: 36px;
+			height: 36px;
+		}
+		.name {
+			font-weight: 700;
+		}
+	}
+	.messages {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 8px;
+		padding: 18px 400px 18px 18px;
+	}
+	.msg {
+		align-self: flex-start;
+		border-radius: 18px;
+		background: #303236;
+		padding: 9px 14px;
+		font-size: 14px;
+	}
+	.msg.me {
+		align-self: flex-end;
+		background: #4a7cf0;
+	}
+	.composer {
+		margin: 0 400px 16px 18px;
+		border-radius: 18px;
+		background: #2a2b2e;
+		height: 36px;
+	}
+}
+
+/* ---------- the popup, as Chrome shows it under the toolbar ---------- */
+.popup {
+	position: absolute;
+	top: 112px;
+	left: 866px;
+	opacity: 0;
+	box-shadow: 0 24px 60px rgba(10, 12, 25, 0.45);
+	border: 0;
+	border-radius: 12px;
+	width: 360px;
+	height: 600px;
+}
+
+/* ---------- cursor ---------- */
+.cursor {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 20;
+	filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+.ripple {
+	position: absolute;
+	z-index: 19;
+	opacity: 0;
+	border: 3px solid #4a8cf0;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+}
+
+/* ---------- title and end cards ---------- */
+.card {
+	display: flex;
+	position: absolute;
+	inset: 0;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 18px;
+	z-index: 30;
+	background: radial-gradient(circle at 30% 20%, #2b3a5c 0%, #15171c 65%);
+	color: #f4f5f7;
+	text-align: center;
+	img {
+		width: 140px;
+		height: 140px;
+	}
+	h1 {
+		font-size: 52px;
+		font-weight: 700;
+	}
+	p {
+		max-width: 900px;
+		color: #b8c2d8;
+		font-size: 26px;
+		font-weight: 500;
+	}
+	.chips {
+		display: flex;
+		gap: 10px;
+		margin-top: 8px;
+		span {
+			border: 1px solid rgba(255, 255, 255, 0.16);
+			border-radius: 999px;
+			background: rgba(255, 255, 255, 0.06);
+			padding: 6px 16px;
+			font-size: 18px;
+			font-weight: 600;
+		}
+	}
+}
+.hidden {
+	display: none;
+}

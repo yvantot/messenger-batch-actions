@@ -62,9 +62,31 @@ Messenger Batch Actions isn't made by or affiliated with Meta.
 | Screenshots (1280x800), in this order | `screenshot-1.png` to `screenshot-5.png` |
 | Small promo tile (440x280) | `store/media/promo-small.png` |
 | Marquee promo tile (1400x560, optional) | `store/media/promo-marquee.png` |
-| Promo video | none |
+| Promo video | the YouTube link of `store/video/demo.mp4` (see below) |
 
 Remove the old screenshots before adding these, so the new popup is what people see.
+
+**Promo video.** The store only takes a YouTube link. Upload `store/video/demo.mp4` (made by
+`python store/video/record.py`) to YouTube, as Public or Unlisted, then paste its link. On YouTube:
+
+- **Title:** Messenger Batch Actions: archive, mute or delete many Messenger chats at once
+- **Description:**
+
+  ```
+  Messenger Batch Actions is a free Chrome extension that archives, unarchives, mutes, unmutes, deletes, leaves or blocks many Messenger chats at once, on messenger.com and facebook.com/messages.
+
+  In this demo:
+  0:00 Open it on Messenger and pick chats
+  0:10 Safe mode: one chat at a time, each one checked
+  0:18 Fast mode: all at once
+  0:27 Mute for as long as you like
+  0:38 Search, select all, load older chats
+  0:50 Delete, leave or block, with a confirm first
+
+  Nothing about your chats leaves your device. Not made by or affiliated with Meta. Chat names are from Rick and Morty, for fun.
+  ```
+
+- **Audience:** not made for kids. The video has no sound; YouTube Studio's free Audio Library can add music.
 
 **Homepage URL:** https://github.com/yvantot/messenger-batch-actions
 

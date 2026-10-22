@@ -1,2 +1,4 @@
 # Upload packages for the Chrome Web Store
 *.zip
+# The demo video, made by store/video/record.py
+*.mp4
