@@ -29,6 +29,11 @@ module.exports = async (check) => {
 	);
 	check("no permission that shows an install warning", manifest.permissions.every((p) => ["storage", "activeTab", "scripting"].includes(p)) && !manifest.host_permissions);
 
+	// Nothing about the author ships with it, and nothing asks for money
+	const shipped = [manifest.action.default_popup, "manifest.json", "js/index.js", ...content, manifest.background.service_worker];
+	const personal = /Dalman|jidalman|dalmanjunivanne|yvantot\.github\.io|buymeacoffee|donat|support (the )?development/i;
+	check("no personal details or donation asks", shipped.every((file) => !personal.test(read(file))), shipped.filter((file) => personal.test(read(file))).join(", "));
+
 	for (const file of [...content, manifest.background.service_worker, "js/index.js"]) {
 		let ok = true;
 		try {

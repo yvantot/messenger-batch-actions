@@ -4,95 +4,47 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Messenger Batch Actions</title>
-		<meta name="description" content="Multiple chats archive, delete, or mute at once to keep your Messenger clean" />
-		<meta name="author" content="Jun Ivanne Dalman" />
+		<meta name="description" content="Archive, delete, mute or leave many Messenger chats at once" />
 		<link rel="stylesheet" href="../css/index.css" />
 		<script defer src="../js/shared/page-parts.js"></script>
 		<script defer src="../js/index.js"></script>
 	</head>
 	<body>
-		<!-- Information -->
-		<header>
-			<div class="title-container">
-				<div class="icon">
-					<img src="../assets/icons/icon32.png" />
-				</div>
-
-				<span class="vertical-line"></span>
-				<div class="text-title">
-					<h1>Messenger Batch Actions</h1>
-					<span class="horizontal-line"></span>
-					<p>Archive or delete chats with one shot</p>
-				</div>
+		<header class="title">
+			<img src="../assets/icons/icon32.png" alt="" />
+			<div>
+				<h1>Messenger Batch Actions</h1>
+				<p>Pick chats, then what to do with them</p>
 			</div>
 		</header>
 		<main>
-			<!-- Action -->
-			<!-- Select All / Unselect All is also here -->
-			<section>
-				<!-- Chats list -->
-				<div class="actions">
-					<div id="chats-actions" class="chat-actions">
-						<button data-action="mute" data-tooltip="Mute">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M160-200v-80h80v-280q0-33 8.5-65t25.5-61l60 60q-7 16-10.5 32.5T320-560v280h248L56-792l56-56 736 736-56 56-146-144H160Zm560-154-80-80v-126q0-66-47-113t-113-47q-26 0-50 8t-44 24l-58-58q20-16 43-28t49-18v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v206Zm-276-50Zm36 324q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80Zm33-481Z" /></svg>
-						</button>
-						<button data-action="unmute" data-tooltip="Unmute">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M160-200v-80h80v-280q0-83 50-147.5T420-792v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v280h80v80H160Zm320-300Zm0 420q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-280h320v-280q0-66-47-113t-113-47q-66 0-113 47t-47 113v280Z" /></svg>
-						</button>
-						<button data-action="archive" data-tooltip="Archive">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M200-80q-33 0-56.5-23.5T120-160v-451q-18-11-29-28.5T80-680v-120q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v120q0 23-11 40.5T840-611v451q0 33-23.5 56.5T760-80H200Zm0-520v440h560v-440H200Zm-40-80h640v-120H160v120Zm200 280h240v-80H360v80Zm120 20Z" /></svg>
-						</button>
-						<button data-action="unarchive" data-tooltip="Unarchive">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M480-560 320-400l56 56 64-64v168h80v-168l64 64 56-56-160-160Zm-280-80v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z" /></svg>
-						</button>
-						<button data-action="delete" data-tooltip="Delete">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" /></svg>
-						</button>
-						<button data-action="leave" data-tooltip="Leave">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M806-440H320v-80h486l-62-62 56-58 160 160-160 160-56-58 62-62ZM600-600v-160H200v560h400v-160h80v160q0 33-23.5 56.5T600-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400q33 0 56.5 23.5T680-760v160h-80Z" /></svg>
-						</button>
-						<button data-action="block" data-tooltip="Block/Unblock">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M280-440h400v-80H280v80ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" /></svg>
-						</button>
-					</div>
-					<span class="horizontal-line"></span>
-					<div id="chats-actions-additional" class="chat-actions">
-						<button data-action="select-all" data-tooltip="Select-all">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M280-280v-400h400v400H280Zm80-80h240v-240H360v240ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm80-160h-80q0-33 23.5-56.5T200-840v80Zm80 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80q0 33-23.5 56.5T760-120Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80q33 0 56.5 23.5T840-760h-80Z" /></svg>
-						</button>
-						<button data-action="unselect-all" data-tooltip="Unselect-all">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M791-56 567-280H280v-287L56-791l56-57 736 736-57 56ZM360-360h127L360-487v127Zm320-33-80-80v-127H473l-80-80h287v287ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm160 480v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 480v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80q33 0 56.5 23.5T840-760h-80Z" /></svg>
-						</button>
-						<button data-action="sortby-name" data-order="ascending" data-tooltip="Sort-by">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="m80-280 150-400h86l150 400h-82l-34-96H196l-32 96H80Zm140-164h104l-48-150h-6l-50 150Zm328 164v-76l202-252H556v-72h282v76L638-352h202v72H548ZM360-760l120-120 120 120H360ZM480-80 360-200h240L480-80Z" /></svg>
-						</button>
-						<button data-action="load-more" data-tooltip="Load more chats">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M480-200 240-440l56-56 184 183 184-183 56 56-240 240Zm0-240L240-680l56-56 184 183 184-183 56 56-240 240Z" /></svg>
-						</button>
-						<button data-action="refresh-chats" data-tooltip="Refresh Chats">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z" /></svg>
-						</button>
-						<button data-action="search-chats" data-tooltip="Search">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" /></svg>
-						</button>
-					</div>
-					<span class="horizontal-line"></span>
-					<!-- How actions run: one chat at a time, or all at once -->
-					<div id="mode" class="mode-switch">
-						<button data-mode="safe" data-tooltip="One chat at a time, and checks each one">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-84q104-33 172-132t68-220v-189l-240-90-240 90v189q0 121 68 220t172 132Zm0-316Z" /></svg>
-							Safe mode
-						</button>
-						<button data-mode="fast" data-tooltip="All chats at once. Quicker, but Messenger can miss some">
-							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="m422-232 207-248H469l29-227-185 267h139l-30 208ZM320-80l40-280H160l360-520h80l-40 320h240L400-80h-80Zm151-390Z" /></svg>
-							Fast mode
-						</button>
-					</div>
+			<!-- What to do with the selected chats -->
+			<div id="chats-actions" class="chat-actions">
+				<button data-action="mute"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M160-200v-80h80v-280q0-33 8.5-65t25.5-61l60 60q-7 16-10.5 32.5T320-560v280h248L56-792l56-56 736 736-56 56-146-144H160Zm560-154-80-80v-126q0-66-47-113t-113-47q-26 0-50 8t-44 24l-58-58q20-16 43-28t49-18v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v206Zm-276-50Zm36 324q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80Zm33-481Z"/></svg><span>Mute</span></button>
+				<button data-action="unmute"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M160-200v-80h80v-280q0-83 50-147.5T420-792v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v280h80v80H160Zm320-300Zm0 420q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-280h320v-280q0-66-47-113t-113-47q-66 0-113 47t-47 113v280Z"/></svg><span>Unmute</span></button>
+				<button data-action="archive"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M200-80q-33 0-56.5-23.5T120-160v-451q-18-11-29-28.5T80-680v-120q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v120q0 23-11 40.5T840-611v451q0 33-23.5 56.5T760-80H200Zm0-520v440h560v-440H200Zm-40-80h640v-120H160v120Zm200 280h240v-80H360v80Zm120 20Z"/></svg><span>Archive</span></button>
+				<button data-action="unarchive"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M480-560 320-400l56 56 64-64v168h80v-168l64 64 56-56-160-160Zm-280-80v440h560v-440H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm264 300Z"/></svg><span>Unarchive</span></button>
+				<button data-action="delete"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg><span>Delete</span></button>
+				<button data-action="leave"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M806-440H320v-80h486l-62-62 56-58 160 160-160 160-56-58 62-62ZM600-600v-160H200v560h400v-160h80v160q0 33-23.5 56.5T600-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400q33 0 56.5 23.5T680-760v160h-80Z"/></svg><span>Leave</span></button>
+				<button data-action="block" data-tooltip="Block or unblock"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M280-440h400v-80H280v80ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><span>Block</span></button>
+			</div>
+			<!-- How actions run: one chat at a time, or all at once -->
+			<div id="mode" class="mode-switch">
+				<button data-mode="safe" data-tooltip="One chat at a time, and checks each one"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-84q104-33 172-132t68-220v-189l-240-90-240 90v189q0 121 68 220t172 132Zm0-316Z"/></svg>Safe mode</button>
+				<button data-mode="fast" data-tooltip="All chats at once. Quicker, but Messenger can miss some"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="m422-232 207-248H469l29-227-185 267h139l-30 208ZM320-80l40-280H160l360-520h80l-40 320h240L400-80h-80Zm151-390Z"/></svg>Fast mode</button>
+			</div>
+			<!-- The list's tools -->
+			<div class="list-bar">
+				<h2 id="chat-source">Loading...</h2>
+				<div id="chats-actions-additional" class="list-tools">
+					<button data-action="select-all" data-tooltip="Select all"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M280-280v-400h400v400H280Zm80-80h240v-240H360v240ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm80-160h-80q0-33 23.5-56.5T200-840v80Zm80 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80q0 33-23.5 56.5T760-120Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80q33 0 56.5 23.5T840-760h-80Z"/></svg></button>
+					<button data-action="unselect-all" data-tooltip="Unselect all"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M791-56 567-280H280v-287L56-791l56-57 736 736-57 56ZM360-360h127L360-487v127Zm320-33-80-80v-127H473l-80-80h287v287ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm160 480v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 480v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80q33 0 56.5 23.5T840-760h-80Z"/></svg></button>
+					<button data-action="sortby-name" data-tooltip="Sort by name"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="m80-280 150-400h86l150 400h-82l-34-96H196l-32 96H80Zm140-164h104l-48-150h-6l-50 150Zm328 164v-76l202-252H556v-72h282v76L638-352h202v72H548ZM360-760l120-120 120 120H360ZM480-80 360-200h240L480-80Z"/></svg></button>
+					<button data-action="search-chats" data-tooltip="Search"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg></button>
+					<button data-action="refresh-chats" data-tooltip="Refresh"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"/></svg></button>
 				</div>
-				<!-- Archived list -->
-			</section>
-			<input type="text" id="search-chats" class="no-display" />
-			<h2 id="chat-source">Loading...</h2>
+			</div>
+			<input type="text" id="search-chats" class="no-display" placeholder="Search chats" />
 			<!-- Progress of the running action -->
 			<section id="job" class="job no-display">
 				<p id="job-text"></p>
@@ -101,20 +53,12 @@
 				<button id="job-stop">Stop</button>
 				<button id="job-close" class="no-display">OK</button>
 			</section>
-			<!-- Selection -->
-			<section class="chats-container">
-				<section class="chats-list"></section>
-			</section>
+			<section class="chats-list"></section>
+			<button data-action="load-more" class="load-more"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M480-200 240-440l56-56 184 183 184-183 56 56-240 240Zm0-240L240-680l56-56 184 183 184-183 56 56-240 240Z"/></svg>Load more chats</button>
 		</main>
 		<footer>
-			<div>
-				<button id="help">Help & About</button>
-				<a href="https://yvantot.github.io/i" data-tooltip="Help keep this tool updated!">Support development ☕</a>
-			</div>
-			<div>
-				<button id="issues">Report issues</button>
-				<a href="https://yvantot.github.io/i" data-tooltip="Time-saving tools like this one!">Try other tools 💎</a>
-			</div>
+			<button id="help">Help & About</button>
+			<button id="issues">Report issues</button>
 		</footer>
 	</body>
 </html>

@@ -2,10 +2,9 @@
     "manifest_version": 3,
     "name": "Messenger Batch Actions",
     "short_name": "Messenger Tools",
-    "author": "Jun Ivanne Dalman",
     "version": "1.1.0",
     "description": "Multiple chats archive, delete, or mute at once to keep your Messenger clean",
-    "homepage_url": "https://yvantot.github.io/index/",
+    "homepage_url": "https://github.com/yvantot/messenger-batch-actions",
     "permissions": [
         "storage",
         "activeTab",
