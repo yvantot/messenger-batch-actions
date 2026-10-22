@@ -337,6 +337,29 @@ body {
 	height: 600px;
 }
 
+/* ---------- the spotlight ---------- */
+.app,
+.main {
+	position: relative;
+}
+.dim {
+	position: absolute;
+	z-index: 5;
+	opacity: 0;
+	background: #05070f;
+	pointer-events: none;
+}
+#dim-list {
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 363px;
+}
+#dim-chat,
+#dim-popup {
+	inset: 0;
+}
+
 /* ---------- effects ---------- */
 .cursor {
 	position: absolute;

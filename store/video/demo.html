@@ -23,10 +23,13 @@
 				<div class="search">Search Messenger</div>
 				<div id="rows" class="rows"></div>
 			</div>
+			<!-- The spotlight: whatever isn't what to look at dims (focus() in stage.js) -->
+			<div id="dim-list" class="dim"></div>
 			<div class="main">
 				<div class="header"><span class="av" style="background: #4bb4c9">R</span><div class="name">Rick Sanchez</div></div>
 				<div id="messages" class="messages"></div>
 				<div class="composer">Aa</div>
+				<div id="dim-chat" class="dim"></div>
 			</div>
 		</div>
 	</div>
@@ -34,6 +37,7 @@
 	<!-- The real popup, framed like a comic panel -->
 	<div id="popup-frame" class="popup-frame">
 		<iframe id="popup" class="popup" src="../../html/index.html"></iframe>
+		<div id="dim-popup" class="dim"></div>
 	</div>
 
 	<!-- What's shown, top left; the name, top right, all the way through instead of a title card -->

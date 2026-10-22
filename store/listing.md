@@ -77,11 +77,11 @@ Remove the old screenshots before adding these, so the new popup is what people 
 
   In this demo:
   0:00 Pick the chats
-  0:05 Safe mode: one chat at a time, each one checked
-  0:12 Fast mode: all at once
-  0:19 Mute anyone (yes, even Jerry)
-  0:28 Search, and load older chats
-  0:34 Delete for good, with a confirm first
+  0:06 Safe mode: one chat at a time, each one checked
+  0:14 Fast mode: all at once
+  0:22 Mute anyone (yes, even Jerry)
+  0:31 Search, and load older chats
+  0:37 Delete for good, with a confirm first
 
   Nothing about your chats leaves your device. Not made by or affiliated with Meta. Chat names are from Rick and Morty, for fun.
   ```

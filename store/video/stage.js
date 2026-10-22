@@ -1,6 +1,7 @@
 // The demo video: a Messenger-like page with Rick and Morty chats, the real popup in a frame, a cursor that clicks
-// the popup's own buttons, comic captions, portals and sound-effect stamps. Rick and Morty talk in the open chat
-// while things happen, so no second is spent on an intro or an outro. stage.handle() plays Messenger's part for the
+// the popup's own buttons, comic captions, portals and sound-effect stamps. Staging: one thing happens at a time
+// (caption, then clicks, then the effect, then a line from Rick or Morty), and focus() dims whatever isn't what to
+// look at. No intro or outro: the name sits in a corner throughout. stage.handle() plays Messenger's part for the
 // popup (popup-stub.js): it sends the chats and runs the actions on this page. run() is the timeline; record.py
 // steps the clock through it frame by frame (`python store/video/record.py --serve` plays it live).
 
@@ -121,7 +122,7 @@ const stage = {
 			for (const link of links) {
 				job.position++;
 				update();
-				await sleep(300);
+				await sleep(180);
 				await effect_one(action, link);
 				job.done++;
 				update();
@@ -220,7 +221,8 @@ async function portal_row(link) {
 	const box = row.getBoundingClientRect();
 	const portal = open_portal(box.right - 30, box.top + box.height / 2, 64);
 	await portal.grow();
-	stamp("BLORP!", box.right + 46, box.top + 6, { size: 38, angle: -12, hold: 260 });
+	if (!stage.blorped) stamp("BLORP!", box.right + 60, box.top + 8, { size: 44, angle: -10, hold: 420 });
+	stage.blorped = true;
 	row.style.transformOrigin = "right center";
 	await tween(340, (p, e) => {
 		row.style.transform = `translateX(${e * 24}px) scale(${1 - e}) rotate(${-25 * e}deg)`;
@@ -289,6 +291,29 @@ async function effect_all(action, links) {
 	else if (action === "mute") await mute_rows(links);
 }
 
+// ---------- the spotlight ----------
+
+// How much each part dims for each thing to look at: the popup (clicking), the chat list (chats vanishing, with the
+// popup's progress still readable), the open chat (Rick and Morty talking), or everything.
+const FOCUS = {
+	all: { list: 0, chat: 0, popup: 0 },
+	popup: { list: 0.5, chat: 0.5, popup: 0 },
+	list: { list: 0, chat: 0.55, popup: 0.3 },
+	chat: { list: 0.5, chat: 0, popup: 0.5 },
+};
+let focused = FOCUS.all;
+
+async function focus(name) {
+	const from = focused;
+	const to = FOCUS[name];
+	focused = to;
+	await tween(220, (p, e) => {
+		for (const part of ["list", "chat", "popup"]) {
+			document.getElementById(`dim-${part}`).style.opacity = String(from[part] + (to[part] - from[part]) * e);
+		}
+	});
+}
+
 // ---------- Rick and Morty, in the open chat ----------
 
 const PEOPLE = { rick: { initial: "R", color: "#4bb4c9" }, morty: { initial: "M", color: "#e3a94b" } };
@@ -306,20 +331,10 @@ async function say(who, text) {
 	};
 	const dots = make("•••");
 	dots.classList.add("dots");
-	await sleep(380);
+	await sleep(260);
 	dots.remove();
 	const message = make(text);
 	await tween(260, (p) => (message.style.transform = `scale(${back_out(p)})`));
-}
-
-// Several lines, one after another, without holding up the rest of the demo.
-function talk(lines) {
-	(async () => {
-		for (const [who, text, pause] of lines) {
-			await sleep(pause ?? 0);
-			await say(who, text);
-		}
-	})();
 }
 
 // ---------- the cursor, captions and the popup ----------
@@ -330,7 +345,7 @@ function place_cursor() {
 	document.getElementById("cursor").style.transform = `translate(${cursor.x - 6}px, ${cursor.y - 4}px)`;
 }
 
-async function move_to(x, y, ms = 420) {
+async function move_to(x, y, ms = 360) {
 	const from = { ...cursor };
 	await tween(ms, (p, e) => {
 		cursor.x = from.x + (x - from.x) * e;
@@ -342,15 +357,15 @@ async function move_to(x, y, ms = 420) {
 // A small comic burst where the cursor clicks.
 async function burst() {
 	const element = spawn("div", "burst");
-	element.innerHTML = `<svg viewBox="-50 -50 100 100" width="70" height="70"><polygon points="${Array.from({ length: 16 }, (_, i) => {
+	element.innerHTML = `<svg viewBox="-50 -50 100 100" width="44" height="44"><polygon points="${Array.from({ length: 16 }, (_, i) => {
 		const r = i % 2 ? 22 : 46;
 		const a = (Math.PI * i) / 8;
 		return `${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}`;
 	}).join(" ")}" fill="#ffe14d" stroke="#0d0d12" stroke-width="6" stroke-linejoin="round"/></svg>`;
-	element.style.left = `${cursor.x - 35}px`;
-	element.style.top = `${cursor.y - 35}px`;
-	await tween(260, (p) => {
-		element.style.transform = `scale(${0.3 + 0.9 * p}) rotate(${p * 30}deg)`;
+	element.style.left = `${cursor.x - 22}px`;
+	element.style.top = `${cursor.y - 22}px`;
+	await tween(220, (p) => {
+		element.style.transform = `scale(${0.3 + 0.8 * p}) rotate(${p * 30}deg)`;
 		element.style.opacity = String(1 - p);
 	});
 	element.remove();
@@ -424,20 +439,41 @@ function until_job_done() {
 
 // ---------- the timeline ----------
 
+// A beat where only Rick and Morty talk, then the spotlight goes back to the popup.
+async function chat(lines) {
+	await focus("chat");
+	for (const [who, text] of lines) await say(who, text);
+	await sleep(450);
+	await focus("popup");
+}
+
+// Clicks an action and waits for it to finish, with the spotlight on the chat list while it happens. The summary
+// stays up; the next action replaces it.
+async function act(button) {
+	const done = until_job_done();
+	await click(button, 0);
+	await focus("list");
+	await done;
+	await sleep(350);
+	await focus("popup");
+}
+
 async function run() {
 	document.getElementById("rows").replaceChildren(...stage.chats.map(make_row));
 	update_badge();
 	place_cursor();
 	document.getElementById("caption").style.transform = "scale(0)";
 
-	talk([
-		["morty", "Aw geez Rick, I've got like a hundred chats!", 150],
-		["rick", "There's an extension for that, Morty. *burp*", 500],
-	]);
+	// Morty's problem, before anything moves
+	await focus("chat");
+	await say("morty", "Aw geez Rick, I've got like a hundred chats!");
+	await say("rick", "There's an extension for that, Morty. *burp*");
+	await sleep(350);
+	await focus("all");
 
 	// 1. Open it, pick the junk
-	await sleep(1300);
 	await caption(1, "Pick the junk");
+	await sleep(300);
 	const icon = document.getElementById("extension-icon").getBoundingClientRect();
 	await move_to(icon.left + icon.width / 2, icon.top + icon.height / 2, 650);
 	burst();
@@ -447,76 +483,68 @@ async function run() {
 		popup_frame.style.opacity = String(Math.min(1, p * 2));
 		popup_frame.style.transform = `scale(${0.6 + 0.4 * back_out(p)})`;
 	});
+	await focus("popup");
 	await pick(["Council of Ricks", "Gazorpazorp Dating", "Interdimensional Cable", "Plumbus Factory"]);
+	await sleep(300);
 
 	// 2. Safe mode
 	await caption(2, "Safe mode: one chat at a time");
-	let done = until_job_done();
-	await click($("[data-action='archive']"));
-	talk([
-		["morty", "Whoa! Where'd they go?", 1200],
-		["rick", "Archived, Morty. Still there if you need 'em.", 300],
+	await sleep(250);
+	await act($("[data-action='archive']"));
+	await chat([
+		["morty", "Whoa! Where'd they go?"],
+		["rick", "Archived, Morty. Still there if you need 'em."],
 	]);
-	await done;
-	await sleep(700);
-	await click($("#job-close"), 250);
 
 	// 3. Fast mode
 	await caption(3, "Fast mode: all at once");
-	await click($("[data-mode='fast']"), 250);
+	await sleep(250);
+	await click($("[data-mode='fast']"), 300);
 	await pick(["Unity", "Krombopulos Michael", "Birdperson"]);
-	done = until_job_done();
-	await click($("[data-action='archive']"));
-	await done;
-	talk([["rick", "That's science, Morty.", 0]]);
-	await sleep(700);
-	await click($("#job-close"), 250);
+	await sleep(200);
+	await act($("[data-action='archive']"));
+	await chat([["rick", "That's science, Morty."]]);
 
 	// 4. Mute
 	await caption(4, "Mute anyone. Yes, even Jerry.");
+	await sleep(250);
 	await pick(["Jerry Smith", "Squanchy"]);
-	await click($("[data-action='mute']"), 350);
-	await click($("label[for='choice-2']"), 200);
-	await click($(".popup-action"), 350);
-	await click($("label[for='choice-4']"), 200);
-	done = until_job_done();
-	await click($(".popup-action"));
-	await done;
-	await sleep(500);
-	await click($("#job-close"), 250);
-	await click($("[data-action='unselect-all']"), 200);
+	await click($("[data-action='mute']"), 400);
+	await click($("label[for='choice-2']"), 250);
+	await click($(".popup-action"), 400);
+	await click($("label[for='choice-4']"), 250);
+	await act($(".popup-action"));
+	await click($("[data-action='unselect-all']"), 300);
 
 	// 5. Search and load more
 	await caption(5, "Search, and load older chats");
-	await click($("[data-action='search-chats']"), 150);
+	await sleep(250);
+	await click($("[data-action='search-chats']"), 200);
 	await type("smith");
 	await sleep(700);
 	const input = $("#search-chats");
 	input.value = "";
 	input.dispatchEvent(new Event("input", { bubbles: true }));
-	await click($("[data-action='search-chats']"), 150);
-	await click($("button.load-more"), 100);
-	await sleep(800);
-	const load_more = center_of($("button.load-more"));
-	stamp("MORE!", load_more.x - 240, load_more.y - 60, { size: 54, angle: 7, hold: 450 });
+	await click($("[data-action='search-chats']"), 300);
+	await click($("button.load-more"), 0);
+	await sleep(850);
 	const list = $(".chats-list");
 	const from = list.scrollTop;
 	await tween(700, (p, e) => (list.scrollTop = from + (list.scrollHeight - list.clientHeight - from) * e));
 	await sleep(500);
-	await tween(500, (p, e) => (list.scrollTop = (list.scrollHeight - list.clientHeight) * (1 - e)));
 
 	// 6. Delete
 	await caption(6, "Delete for good. It asks first.");
+	await sleep(250);
 	await pick(["Blips and Chitz"]);
-	await click($("[data-action='delete']"), 800);
-	done = until_job_done();
-	await click($(".popup-action"));
-	await done;
+	await click($("[data-action='delete']"), 700);
+	await act($(".popup-action"));
 
 	// The payoff, then stop
+	await focus("chat");
 	await say("morty", "My inbox is actually clean!");
 	await say("rick", "Wubba lubba dub dub!");
-	await sleep(1200);
+	await sleep(1000);
 	window.demo_finished = true;
 }
 
