@@ -21,6 +21,11 @@ once, on messenger.com and facebook.com/messages.
 When something breaks, the popup's **Report issues > Copy a report** says which parts were found and how, with no
 chat names.
 
+## Releasing
+
+`store/listing.md` has every field of the Chrome Web Store dashboard and how to build the zip; `store/media/` has the
+images (`python store/render.py` redraws them). `PRIVACY.md` is the privacy policy the listing links to.
+
 ## Developing
 
 `node tests/run.js` runs the tests (Node 20 or newer, no dependencies).

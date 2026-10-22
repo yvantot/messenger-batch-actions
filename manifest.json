@@ -3,7 +3,7 @@
     "name": "Messenger Batch Actions",
     "short_name": "Messenger Tools",
     "version": "1.1.0",
-    "description": "Multiple chats archive, delete, or mute at once to keep your Messenger clean",
+    "description": "Archive, mute, delete or leave many Messenger chats at once, on messenger.com and facebook.com/messages.",
     "homepage_url": "https://github.com/yvantot/messenger-batch-actions",
     "permissions": [
         "storage",
