@@ -89,8 +89,11 @@ const POPUPS = {
 		}),
 };
 
-// Pages the content script runs on (see the manifest)
+// Pages the content script runs on (see the manifest), and the rest of Facebook
 const MESSENGER_PAGE = /^https:\/\/www\.(messenger\.com\/|facebook\.com\/messages)/;
+const FACEBOOK_PAGE = /^https:\/\/([a-z]+\.)?facebook\.com\//;
+const MESSENGER_URL = "https://www.messenger.com/";
+const FACEBOOK_MESSAGES_URL = "https://www.facebook.com/messages/";
 
 const ICONS = {
 	block: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#CCCCCC"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q54 0 104-17.5t92-50.5L228-676q-33 42-50.5 92T160-480q0 134 93 227t227 93Zm252-124q33-42 50.5-92T800-480q0-134-93-227t-227-93q-54 0-104 17.5T284-732l448 448Z"/></svg>',
@@ -114,6 +117,9 @@ const state = {
 	mode: "safe",
 	// Resolves the pending report request
 	report_waiting: null,
+	// The screen showing (see VIEWS), and which reconnect attempt is the current one
+	view: "connecting",
+	reconnecting: 0,
 };
 
 function get_popup_elements() {
@@ -133,6 +139,11 @@ function get_popup_elements() {
 		JOB_CLOSE: document.getElementById("job-close"),
 		MODE: document.getElementById("mode"),
 		LOAD_MORE: document.querySelector("button.load-more"),
+		MAIN: document.querySelector("main"),
+		STATE_ICON: document.getElementById("state-icon"),
+		STATE_TITLE: document.getElementById("state-title"),
+		STATE_TEXT: document.getElementById("state-text"),
+		STATE_BUTTONS: document.getElementById("state-buttons"),
 	};
 }
 
@@ -140,28 +151,140 @@ function escape_html(text) {
 	return String(text).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
+// ---------- screens ----------
+
+const STATE_ICONS = {
+	chat: '<svg viewBox="0 -960 960 960"><path d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/></svg>',
+	reload: '<svg viewBox="0 -960 960 960"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"/></svg>',
+};
+
+// The screens shown instead of the controls, when they can't work yet. Buttons are [label, on_click, primary].
+const VIEWS = {
+	connecting: () => ({ icon: STATE_ICONS.reload, spin: true, title: "Connecting to Messenger...", text: "", buttons: [] }),
+	not_messenger: () => ({
+		icon: STATE_ICONS.chat,
+		title: "Open Messenger first",
+		text: "This works on messenger.com and on Facebook's Messages page. Open one of them, then click this again.",
+		buttons: [
+			["Open Messenger", () => open_tab(MESSENGER_URL), true],
+			["Open Facebook Messages", () => open_tab(FACEBOOK_MESSAGES_URL)],
+		],
+	}),
+	not_messages: () => ({
+		icon: STATE_ICONS.chat,
+		title: "Go to your messages",
+		text: "This works on Facebook's Messages page, not on the rest of Facebook.",
+		buttons: [
+			["Open Messages here", () => go_to(FACEBOOK_MESSAGES_URL), true],
+			["Open Messenger instead", () => open_tab(MESSENGER_URL)],
+		],
+	}),
+	needs_reload: () => ({
+		icon: STATE_ICONS.reload,
+		title: "Messenger needs a reload",
+		text: "It was open before this extension was installed or updated. Reload it once to connect.",
+		buttons: [["Reload Messenger", reload_messenger, true]],
+	}),
+	no_list: () => ({
+		icon: STATE_ICONS.chat,
+		title: "Your chats aren't showing",
+		text: "Open your chat list in Messenger. If you're logged out, log in first.",
+		buttons: [["Show my chats", () => go_to(chat_list_url()), true]],
+	}),
+};
+
+function set_view(view) {
+	state.view = view;
+	render_view();
+}
+
+function render_view() {
+	const { MAIN, STATE_ICON, STATE_TITLE, STATE_TEXT, STATE_BUTTONS } = get_popup_elements();
+	MAIN.dataset.view = state.view;
+	if (state.view === "ready") return;
+	const view = VIEWS[state.view]();
+	STATE_ICON.innerHTML = view.icon;
+	STATE_ICON.classList.toggle("loading", Boolean(view.spin));
+	STATE_TITLE.textContent = view.title;
+	STATE_TEXT.textContent = view.text;
+	STATE_BUTTONS.replaceChildren(
+		...view.buttons.map(([label, on_click, primary]) => {
+			const button = document.createElement("button");
+			button.textContent = label;
+			if (primary) button.className = "primary";
+			button.addEventListener("click", on_click);
+			return button;
+		}),
+	);
+}
+
+// The page with the chat list, on the site the tab is on.
+function chat_list_url() {
+	return FACEBOOK_PAGE.test(state.tab?.url ?? "") ? FACEBOOK_MESSAGES_URL : MESSENGER_URL;
+}
+
+function open_tab(url) {
+	chrome.tabs.create({ url });
+	window.close();
+}
+
+// Takes the tab to `url`, then connects once Messenger has loaded there.
+async function go_to(url) {
+	await chrome.tabs.update(state.tab.id, { url });
+	reconnect();
+}
+
+async function reload_messenger() {
+	await chrome.tabs.reload(state.tab.id);
+	reconnect();
+}
+
 // ---------- connecting to Messenger ----------
 
 async function connect() {
-	const { CHAT_SOURCE } = get_popup_elements();
-	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-	state.tab = tab;
-	if (!tab || !MESSENGER_PAGE.test(tab.url ?? "")) {
-		CHAT_SOURCE.classList.add("long");
-		CHAT_SOURCE.innerHTML =
-			"Open <a target='_blank' href='https://www.messenger.com/'>Messenger</a> or <a target='_blank' href='https://www.facebook.com/messages/'>Facebook Messages</a>, then open this again";
-		return;
-	}
-	chrome.runtime.sendMessage({ message: "rules_check" }).catch(() => {});
+	set_view("connecting");
+	try {
+		const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+		state.tab = tab;
+		const url = tab?.url ?? "";
+		if (!MESSENGER_PAGE.test(url)) {
+			set_view(FACEBOOK_PAGE.test(url) ? "not_messages" : "not_messenger");
+			return;
+		}
+		chrome.runtime.sendMessage({ message: "rules_check" }).catch(() => {});
 
-	let port = await open_port(tab.id);
-	// Messenger was opened before the extension was installed or updated: add the content scripts now
-	if (!port && (await inject_content_scripts(tab.id))) port = await open_port(tab.id);
-	if (!port) {
-		show_reload_needed();
-		return;
+		let port = await open_port(tab.id);
+		// Messenger was opened before the extension was installed or updated: add the content scripts now
+		if (!port && (await inject_content_scripts(tab.id))) port = await open_port(tab.id);
+		if (!port) {
+			set_view("needs_reload");
+			return;
+		}
+		// Its first message (the chats) has picked the screen already
+		state.port = port;
+	} catch (error) {
+		console.warn("Couldn't connect to Messenger:", error);
+		set_view("needs_reload");
 	}
-	state.port = port;
+}
+
+// After Messenger reloads or goes to another page: connects again once its content script is back, without
+// checking the tab's address (the popup may not be allowed to read it after it changes). Gives up after about
+// 15 seconds and starts over with connect().
+async function reconnect() {
+	const attempt = ++state.reconnecting;
+	state.port = null;
+	set_view("connecting");
+	for (let i = 0; i < 10; i++) {
+		await new Promise((resolve) => setTimeout(resolve, 1500));
+		if (attempt !== state.reconnecting) return;
+		const port = await open_port(state.tab.id);
+		if (port) {
+			state.port = port;
+			return;
+		}
+	}
+	if (attempt === state.reconnecting) connect();
 }
 
 // Connects to the content script in the tab. Resolves with the port once it answers, or null.
@@ -202,33 +325,16 @@ async function inject_content_scripts(tab_id) {
 	}
 }
 
-// Messenger reloaded or went to another site while the popup was open.
+// Messenger reloaded or left the page while the popup was open. A job that was running ended with the page.
 function on_port_lost() {
-	state.port = null;
-	const { CHATS_LIST } = get_popup_elements();
-	CHATS_LIST.replaceChildren();
-	setTimeout(async () => {
-		state.port = await open_port(state.tab.id);
-		if (!state.port) show_reload_needed();
-	}, 1500);
-}
-
-function show_reload_needed() {
-	const { CHAT_SOURCE } = get_popup_elements();
-	CHAT_SOURCE.classList.add("long");
-	CHAT_SOURCE.innerHTML = "Messenger needs a reload to work with this.<br/><a id='reload-messenger'>Reload Messenger</a>";
-	document.getElementById("reload-messenger").addEventListener("click", async () => {
-		CHAT_SOURCE.textContent = "Reloading...";
-		await chrome.tabs.reload(state.tab.id);
-		setTimeout(connect, 3000);
-	});
+	state.chats = [];
+	state.job = null;
+	render_job();
+	reconnect();
 }
 
 function send(request) {
-	if (!state.port) {
-		show_reload_needed();
-		return false;
-	}
+	if (!state.port) return false;
 	state.port.postMessage(request);
 	return true;
 }
@@ -238,6 +344,7 @@ function on_port_message(message) {
 		case "chats": {
 			state.chats = Array.isArray(message.chats) ? message.chats : [];
 			state.source = message.chats ? message.source : null;
+			set_view(message.chats ? "ready" : "no_list");
 			// Chats that left the list (archived, deleted) aren't selected anymore
 			const links = new Set(state.chats.map((chat) => chat.link));
 			state.selected.forEach((link) => links.has(link) || state.selected.delete(link));
@@ -272,7 +379,18 @@ function render_chats() {
 		chats.sort((a, b) => a.name.localeCompare(b.name) * direction);
 	}
 	const term = state.search.trim().toLowerCase();
-	CHATS_LIST.replaceChildren(...chats.map((chat) => make_chat_el(chat, term)));
+	const elements = chats.map((chat) => make_chat_el(chat, term));
+	CHATS_LIST.replaceChildren(...elements);
+	// Say why the list is empty
+	let note = "";
+	if (!chats.length) note = "No chats in this list. Open another list in Messenger, or refresh.";
+	else if (elements.every((element) => element.classList.contains("no-display"))) note = `No chats match "${state.search.trim()}".`;
+	if (note) {
+		const element = document.createElement("p");
+		element.className = "list-note";
+		element.textContent = note;
+		CHATS_LIST.append(element);
+	}
 	render_source();
 }
 
@@ -281,6 +399,9 @@ function make_chat_el(chat, term) {
 	element.className = "chat-container";
 	element.dataset.link = chat.link;
 	element.title = chat.name;
+	element.tabIndex = 0;
+	element.setAttribute("role", "checkbox");
+	element.setAttribute("aria-checked", String(state.selected.has(chat.link)));
 	if (state.selected.has(chat.link)) element.classList.add("chat-selected");
 	if (term && !chat.name.toLowerCase().includes(term)) element.classList.add("no-display");
 	// The chat's picture, or its first letter
@@ -302,17 +423,10 @@ function make_chat_el(chat, term) {
 	return element;
 }
 
+// The line above the list: how many chats are loaded and selected. Also dims the actions until a chat is picked.
 function render_source() {
-	const { CHAT_SOURCE } = get_popup_elements();
-	CHAT_SOURCE.classList.toggle("long", state.source === null);
-	if (state.source === null) {
-		CHAT_SOURCE.textContent = "Messenger's chat list isn't showing. Open your chats in Messenger.";
-		return;
-	}
-	if (!state.chats.length) {
-		CHAT_SOURCE.textContent = `${state.source}: it's kinda quiet here...`;
-		return;
-	}
+	const { CHAT_SOURCE, CHATS_ACTIONS } = get_popup_elements();
+	CHATS_ACTIONS.classList.toggle("none-selected", !state.selected.size);
 	// The list's name only when it isn't the main one: "22 chats, 3 selected", "Archived: 9 chats"
 	const where = state.source === "Chats List" ? "" : `${state.source}: `;
 	const selected = state.selected.size ? `, ${state.selected.size} selected` : "";
@@ -413,7 +527,7 @@ async function build_report() {
 		lines.push(`GitHub rules check: ${rules_check.ok ? `got ${rules_check.version}` : rules_check.error} (${when})`);
 	} else lines.push("GitHub rules check: not yet");
 	if (!page) {
-		lines.push(`Page: not connected (${state.tab?.url ? new URL(state.tab.url).hostname : "no tab"})`);
+		lines.push(`Page: not connected (${state.view})`);
 		return lines.join("\n");
 	}
 	lines.push(`Page: ${page.site}, ${page.page}`, `Layout rules in use: ${page.rules ?? "built-in only"}`, "", "Parts:");
@@ -438,10 +552,9 @@ async function copy_report() {
 }
 
 async function check_for_fixes() {
-	const { CHAT_SOURCE } = get_popup_elements();
-	CHAT_SOURCE.textContent = "Checking GitHub for layout fixes...";
+	show_popup({ title: "Checking GitHub for layout fixes...", icon: STATE_ICONS.reload, action: "Please wait" });
+	document.querySelector(".popup-action").disabled = true;
 	const result = await chrome.runtime.sendMessage({ message: "rules_fetch" }).catch(() => null);
-	render_source();
 	POPUPS.fixes_checked(result);
 }
 
@@ -459,14 +572,23 @@ function append_el_listeners() {
 	ISSUES.addEventListener("click", () => POPUPS.issues());
 	HELP.addEventListener("click", () => POPUPS.help());
 
-	CHATS_LIST.addEventListener("click", ({ target }) => {
-		const chat = target.closest(".chat-container");
-		if (!chat) return;
+	const toggle_chat = (chat) => {
 		const { link } = chat.dataset;
 		if (state.selected.has(link)) state.selected.delete(link);
 		else state.selected.add(link);
 		chat.classList.toggle("chat-selected", state.selected.has(link));
+		chat.setAttribute("aria-checked", String(state.selected.has(link)));
 		render_source();
+	};
+	CHATS_LIST.addEventListener("click", ({ target }) => {
+		const chat = target.closest(".chat-container");
+		if (chat) toggle_chat(chat);
+	});
+	CHATS_LIST.addEventListener("keydown", (event) => {
+		const chat = event.target.closest(".chat-container");
+		if (!chat || (event.key !== " " && event.key !== "Enter")) return;
+		event.preventDefault();
+		toggle_chat(chat);
 	});
 
 	JOB_STOP.addEventListener("click", () => send({ type: "stop" }));
@@ -599,8 +721,7 @@ function append_el_listeners() {
 				button.classList.remove("spin-anim");
 				void button.offsetWidth;
 				button.classList.add("spin-anim");
-				if (state.port) send({ type: "list" });
-				else connect();
+				if (!send({ type: "list" })) connect();
 				break;
 			}
 			case "search-chats": {
@@ -692,7 +813,7 @@ async function remind_user() {
 	const month = 30 * 24 * 3600 * 1000;
 	if (opens < 5 || Date.now() - review_asked_at < month || Math.random() > 0.1) return;
 	setTimeout(() => {
-		if (state.job || document.getElementById("popup")) return;
+		if (state.view !== "ready" || state.job || document.getElementById("popup")) return;
 		chrome.storage.local.set({ review_asked_at: Date.now() });
 		POPUPS.review();
 	}, 1500);

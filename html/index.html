@@ -17,7 +17,14 @@
 				<p>Pick chats, then what to do with them</p>
 			</div>
 		</header>
-		<main>
+		<!-- data-view says which screen shows: the controls ("ready"), or #state-view (see render_view in js/index.js) -->
+		<main data-view="connecting">
+			<section id="state-view" class="state-view" aria-live="polite">
+				<div id="state-icon" class="state-icon"></div>
+				<h2 id="state-title">Connecting to Messenger...</h2>
+				<p id="state-text"></p>
+				<div id="state-buttons" class="state-buttons"></div>
+			</section>
 			<!-- What to do with the selected chats -->
 			<div id="chats-actions" class="chat-actions">
 				<button data-action="mute"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M160-200v-80h80v-280q0-33 8.5-65t25.5-61l60 60q-7 16-10.5 32.5T320-560v280h248L56-792l56-56 736 736-56 56-146-144H160Zm560-154-80-80v-126q0-66-47-113t-113-47q-26 0-50 8t-44 24l-58-58q20-16 43-28t49-18v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v206Zm-276-50Zm36 324q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80Zm33-481Z"/></svg><span>Mute</span></button>
@@ -35,7 +42,7 @@
 			</div>
 			<!-- The list's tools -->
 			<div class="list-bar">
-				<h2 id="chat-source">Loading...</h2>
+				<h2 id="chat-source"></h2>
 				<div id="chats-actions-additional" class="list-tools">
 					<button data-action="select-all" data-tooltip="Select all"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M280-280v-400h400v400H280Zm80-80h240v-240H360v240ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm80-160h-80q0-33 23.5-56.5T200-840v80Zm80 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80q0 33-23.5 56.5T760-120Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80q33 0 56.5 23.5T840-760h-80Z"/></svg></button>
 					<button data-action="unselect-all" data-tooltip="Unselect all"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="#CCCCCC"><path d="M791-56 567-280H280v-287L56-791l56-57 736 736-57 56ZM360-360h127L360-487v127Zm320-33-80-80v-127H473l-80-80h287v287ZM200-200v80q-33 0-56.5-23.5T120-200h80Zm-80-80v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm160 480v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 640v-80h80v80h-80Zm0-640v-80h80v80h-80Zm160 480v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80q33 0 56.5 23.5T840-760h-80Z"/></svg></button>
