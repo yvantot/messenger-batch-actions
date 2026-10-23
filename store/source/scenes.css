@@ -1,7 +1,16 @@
-/* The store screenshots: a headline, a Messenger-like window with made-up chats, and the real popup on top. */
+/* The store screenshots, in the demo video's style: warm cream, a light Messenger with made-up chats, and the real
+   popup on top. A headline names the feature and the platform. */
 @font-face {
 	font-family: Quicksand;
 	src: url("../../assets/Quicksand.ttf") format("truetype");
+}
+:root {
+	--cream: #fbf6ee;
+	--text: #1f2330;
+	--muted: #65676b;
+	--line: #e7e3dc;
+	--blue: #0a7cff;
+	--picked: #e7f1ff;
 }
 * {
 	box-sizing: border-box;
@@ -13,131 +22,157 @@ body {
 	width: 1280px;
 	height: 800px;
 	overflow: hidden;
-	background: linear-gradient(135deg, #e7edfb 0%, #f1ecfa 100%);
-	color: #1d2433;
+	background:
+		radial-gradient(circle at 5% 10%, #ffe0cf 0, transparent 24%),
+		radial-gradient(circle at 97% 92%, #d7f2e3 0, transparent 26%),
+		radial-gradient(circle at 94% 4%, #e6defb 0, transparent 20%),
+		var(--cream);
+	color: var(--text);
 	font-family: Quicksand, Arial, sans-serif;
 }
 .headline {
 	position: absolute;
-	top: 46px;
-	left: 70px;
-	width: 760px;
+	top: 42px;
+	right: 0;
+	left: 0;
+	text-align: center;
 	h1 {
-		font-size: 40px;
+		font-size: 42px;
 		font-weight: 700;
-		line-height: 1.15;
+		line-height: 1.2;
 	}
 	p {
-		margin-top: 12px;
-		color: #55607a;
-		font-size: 20px;
-		font-weight: 500;
+		margin-top: 10px;
+		color: #5b6070;
+		font-size: 21px;
+		font-weight: 600;
 	}
 }
 
 /* ---------- the browser window with Messenger ---------- */
 .window {
 	position: absolute;
-	box-shadow: 0 24px 60px rgba(40, 50, 90, 0.22);
-	border-radius: 14px;
-	background: #1c1d1f;
+	top: 176px;
+	left: 70px;
+	box-shadow: 0 18px 50px rgba(70, 50, 30, 0.16);
+	border-radius: 18px;
+	background: #fff;
+	width: 1010px;
+	height: 600px;
 	overflow: hidden;
 }
 .bar {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	background: #2a2b2e;
-	padding: 0 14px;
-	height: 40px;
+	border-bottom: 1px solid var(--line);
+	background: #f6f3ee;
+	padding: 0 16px;
+	height: 42px;
 	i {
 		border-radius: 50%;
-		background: #4a4c51;
+		background: #ff8a80;
 		width: 12px;
 		height: 12px;
+	}
+	i:nth-child(2) {
+		background: #ffd84d;
+	}
+	i:nth-child(3) {
+		background: #7ed6a6;
 	}
 	.address {
 		margin-left: 14px;
 		border-radius: 14px;
-		background: #1c1d1f;
+		background: #fff;
 		padding: 4px 14px;
-		width: 360px;
-		color: #9aa0aa;
-		font-size: 13px;
-	}
-	.extension {
-		margin-left: auto;
-		border-radius: 50%;
-		background: url("../../assets/icons/icon32.png") center / 20px no-repeat;
-		width: 30px;
-		height: 30px;
-	}
-	.extension.open {
-		background-color: #3a3c40;
+		width: 340px;
+		color: var(--muted);
+		font-size: 14px;
 	}
 }
 .app {
 	display: flex;
-	height: calc(100% - 40px);
-	color: #e8e9eb;
+	height: calc(100% - 42px);
 }
 .sidebar {
-	border-right: 1px solid #2e3034;
-	padding: 18px 10px;
+	flex-shrink: 0;
+	border-right: 1px solid var(--line);
+	padding: 16px 10px 0;
 	width: 330px;
 	h2 {
-		margin: 0 8px 12px;
-		font-size: 22px;
+		margin: 0 10px 12px;
+		font-size: 24px;
 		font-weight: 700;
 	}
 	.search {
-		margin: 0 8px 12px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0 10px 10px;
 		border-radius: 18px;
-		background: #2a2b2e;
-		height: 34px;
+		background: #f0f2f5;
+		padding: 0 12px;
+		height: 36px;
+		color: var(--muted);
+		font-size: 15px;
+		svg {
+			width: 16px;
+			height: 16px;
+		}
 	}
 }
 .row {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	border-radius: 10px;
-	padding: 7px 8px;
+	border-radius: 12px;
+	padding: 0 10px;
+	height: 62px;
 	.av {
-		flex-shrink: 0;
-		width: 44px;
-		height: 44px;
+		width: 46px;
+		height: 46px;
+		font-size: 18px;
+	}
+	.text {
+		flex: 1;
+		min-width: 0;
+	}
+	.name,
+	.preview {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.name {
 		font-size: 15px;
-		font-weight: 600;
+		font-weight: 700;
 	}
 	.preview {
-		color: #9aa0aa;
+		color: var(--muted);
 		font-size: 13px;
+	}
+	.muted {
+		flex-shrink: 0;
+		width: 18px;
+		height: 18px;
+		color: #8a93a6;
 	}
 }
 .row.picked {
-	background: rgba(84, 140, 240, 0.18);
+	background: var(--picked);
 }
 .row.leaving {
-	opacity: 0.35;
+	opacity: 0.3;
 }
 .av {
 	display: grid;
+	flex-shrink: 0;
 	place-items: center;
 	border-radius: 50%;
 	color: #fff;
 	font-weight: 700;
 }
-.c0 { background: #e8716b; }
-.c1 { background: #5bb98c; }
-.c2 { background: #6c8cf0; }
-.c3 { background: #e3a94b; }
-.c4 { background: #4bb4c9; }
-.c5 { background: #b27be0; }
-.c6 { background: #d9739f; }
-.c7 { background: #7ca35a; }
 .main {
 	display: flex;
 	flex: 1;
@@ -146,13 +181,14 @@ body {
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		border-bottom: 1px solid #2e3034;
+		border-bottom: 1px solid var(--line);
 		padding: 12px 18px;
 		.av {
-			width: 36px;
-			height: 36px;
+			width: 38px;
+			height: 38px;
 		}
 		.name {
+			font-size: 17px;
 			font-weight: 700;
 		}
 	}
@@ -162,34 +198,52 @@ body {
 		flex-direction: column;
 		justify-content: flex-end;
 		gap: 8px;
-		padding: 18px;
+		padding: 18px 250px 12px 18px;
 	}
 	.msg {
-		align-self: flex-start;
-		border-radius: 18px;
-		background: #303236;
-		padding: 9px 14px;
-		max-width: 70%;
-		font-size: 14px;
+		display: flex;
+		align-items: flex-end;
+		gap: 8px;
+		.av {
+			width: 28px;
+			height: 28px;
+			font-size: 12px;
+		}
+		.bubble {
+			border-radius: 20px;
+			background: #f0f0f0;
+			padding: 9px 16px;
+			font-size: 16px;
+			font-weight: 600;
+		}
 	}
 	.msg.me {
-		align-self: flex-end;
-		background: #4a7cf0;
+		flex-direction: row-reverse;
+		.bubble {
+			background: var(--blue);
+			color: #fff;
+		}
 	}
 	.composer {
-		margin: 0 18px 16px;
+		margin: 0 250px 16px 18px;
 		border-radius: 18px;
-		background: #2a2b2e;
-		height: 36px;
+		background: #f0f2f5;
+		padding: 0 16px;
+		height: 40px;
+		color: var(--muted);
+		font-size: 16px;
+		line-height: 40px;
 	}
 }
 
-/* ---------- the popup, as Chrome shows it under the toolbar ---------- */
+/* ---------- the real popup, as Chrome shows it under the toolbar ---------- */
 .popup {
 	position: absolute;
-	box-shadow: 0 24px 60px rgba(20, 25, 45, 0.35);
+	top: 150px;
+	left: 862px;
+	box-shadow: 0 22px 60px rgba(30, 20, 10, 0.28);
 	border: 0;
-	border-radius: 12px;
+	border-radius: 14px;
 	width: 360px;
 	height: 600px;
 	overflow: hidden;

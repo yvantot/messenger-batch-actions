@@ -1,37 +1,16 @@
-// Stands in for the browser's extension APIs when the popup (html/index.html) is drawn for the store images, with
-// made-up chats. ?scene= picks what the popup shows:
-//   select     chats picked, ready to act on
-//   progress   Safe mode archiving, part way
-//   fast       Fast mode, after archiving 12 chats
-//   mute       the "Mute for?" window
-//   report     the Report issues window
+// Stands in for the browser's extension APIs when the popup (html/index.html) is drawn inside a store screenshot.
+// The chats and what the popup shows come from the screenshot's scene (scenes.js, in the page around it), set up
+// once the popup has its chats: chats picked, a job's progress, the mute window, or a search and its delete window.
 (() => {
-	const scene = new URLSearchParams(location.search).get("scene") ?? "select";
-	const COLORS = ["#e8716b", "#5bb98c", "#6c8cf0", "#e3a94b", "#4bb4c9", "#b27be0", "#d9739f", "#7ca35a"];
-	const avatar = (name, i) =>
+	const scene_name = new URLSearchParams(location.search).get("scene") ?? "select";
+	const { SCENES, CHATS, COLORS, chat_link } = window.parent;
+	const scene = SCENES[scene_name];
+	const avatar = (name) =>
 		"data:image/svg+xml," +
 		encodeURIComponent(
-			`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="${COLORS[i % COLORS.length]}"/><text x="32" y="42" font-family="Arial" font-size="28" font-weight="700" fill="#fff" text-anchor="middle">${name[0]}</text></svg>`,
+			`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="${COLORS[CHATS[name][1]]}"/><text x="32" y="42" font-family="Arial" font-size="28" font-weight="700" fill="#fff" text-anchor="middle">${name[0]}</text></svg>`,
 		);
-	const NAMES = [
-		"Mom",
-		"Book club",
-		"Promo deals",
-		"Alex Rivera",
-		"Old group project",
-		"Marketplace: desk chair",
-		"Weekend trip",
-		"Raffle 2025",
-		"Sam Lee",
-		"Giveaway page",
-		"Class of 2026",
-		"Jordan",
-		"Gym buddies",
-		"Event volunteers",
-		"Taylor",
-	];
-	const chats = NAMES.map((name, i) => ({ link: `/t/${1000 + i}/`, name, img: avatar(name, i) }));
-	const PICKED = ["Promo deals", "Old group project", "Marketplace: desk chair", "Raffle 2025", "Giveaway page", "Event volunteers"];
+	const chats = scene.chats.map((name) => ({ link: chat_link(name), name, img: avatar(name) }));
 
 	let send_to_popup = null;
 	const port = {
@@ -42,7 +21,7 @@
 	};
 	window.chrome = {
 		tabs: {
-			query: async () => [{ id: 1, url: "https://www.messenger.com/" }],
+			query: async () => [{ id: 1, url: `https://www.${scene.address ?? "messenger.com"}/` }],
 			connect: () => {
 				setTimeout(() => send_to_popup?.({ type: "chats", chats, source: "Chats List" }), 10);
 				return port;
@@ -57,7 +36,7 @@
 		},
 		storage: {
 			local: {
-				get: async () => ({ mode: scene === "fast" ? "fast" : "safe", opens: 0 }),
+				get: async () => ({ mode: scene.mode ?? "safe", opens: 0 }),
 				set: async () => {},
 			},
 		},
@@ -71,7 +50,6 @@
 		document.head.appendChild(style);
 	});
 
-	// Sets the scene up once the popup has its chats
 	const pick = (names) =>
 		document.querySelectorAll(".chat-container").forEach((row) => {
 			if (names.includes(row.textContent.trim())) row.click();
@@ -82,29 +60,22 @@
 	};
 	addEventListener("load", () =>
 		setTimeout(() => {
-			if (scene === "select") pick(PICKED);
-			if (scene === "progress") {
-				pick(PICKED);
-				send_to_popup({
-					type: "job",
-					job: { action: "archive", mode: "safe", total: 6, position: 4, done: 3, problems: [], running: true, stopping: false, seconds: 3 },
-				});
-			}
-			if (scene === "fast") {
-				send_to_popup({ type: "chats", chats: chats.filter((chat) => !PICKED.includes(chat.name)), source: "Chats List" });
-				send_to_popup({
-					type: "job",
-					job: { action: "archive", mode: "fast", total: 6, position: 6, done: 6, problems: [], running: false, stopping: false, seconds: 1 },
-				});
-			}
-			if (scene === "mute") {
-				pick(["Book club", "Class of 2026", "Gym buddies"]);
+			if (scene.picked && scene_name !== "delete") pick(scene.picked);
+			if (scene.job) send_to_popup({ type: "job", job: { problems: [], stopping: false, seconds: 1, ...scene.job } });
+			if (scene_name === "mute") {
 				document.querySelector("[data-action='mute']").click();
 				choose(2);
 				document.querySelector(".popup-action").click();
-				choose(2);
+				choose(4);
 			}
-			if (scene === "report") document.getElementById("issues").click();
+			if (scene_name === "delete") {
+				document.querySelector("[data-action='search-chats']").click();
+				const input = document.getElementById("search-chats");
+				input.value = "market";
+				input.dispatchEvent(new Event("input", { bubbles: true }));
+				document.querySelector("[data-action='select-all']").click();
+				document.querySelector("[data-action='delete']").click();
+			}
 		}, 200),
 	);
 })();

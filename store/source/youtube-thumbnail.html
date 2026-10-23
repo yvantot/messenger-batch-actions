@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<!-- The YouTube thumbnail, 1280x720: a stickman sweeps a pile of unread chats into an archive box. A 3-word hook,
+	     no product name or logo. It has to read at feed size (320x180). -->
+	<style>
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+		body {
+			position: relative;
+			width: 1280px;
+			height: 720px;
+			overflow: hidden;
+			background: radial-gradient(circle at 30% 35%, #ffe680 0%, #ffd23f 55%, #ffc21a 100%);
+			font-family: "Arial Black", "Segoe UI Black", Impact, sans-serif;
+		}
+		.hook {
+			position: absolute;
+			top: 150px;
+			left: 60px;
+			line-height: 0.95;
+			div {
+				font-size: 124px;
+				letter-spacing: -2px;
+			}
+			.clean {
+				color: #111;
+			}
+			.messenger {
+				color: #0866ff;
+				font-size: 86px;
+			}
+		}
+		.tag {
+			display: inline-block;
+			margin-top: 26px;
+			transform: rotate(-4deg);
+			box-shadow: 10px 10px 0 #111;
+			border: 7px solid #111;
+			border-radius: 18px;
+			background: #ff3b3b;
+			padding: 4px 34px 10px;
+			color: #fff;
+			font-size: 112px;
+		}
+		svg.scene {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+	</style>
+</head>
+<body>
+	<div class="hook">
+		<div class="clean">CLEAN</div>
+		<div class="messenger">MESSENGER</div>
+		<div class="tag">FAST</div>
+	</div>
+
+	<svg class="scene" width="1280" height="720" viewBox="0 0 1280 720">
+		<defs>
+			<!-- A chat bubble with an unread badge -->
+			<g id="bubble">
+				<path d="M-46 -30 h92 a22 22 0 0 1 22 22 v28 a22 22 0 0 1 -22 22 h-60 l-22 18 v-18 h-10 a22 22 0 0 1 -22 -22 v-28 a22 22 0 0 1 22 -22 z" fill="#fff" stroke="#111" stroke-width="7" stroke-linejoin="round" />
+				<g fill="#c9ced8"><rect x="-36" y="-12" width="60" height="10" rx="5" /><rect x="-36" y="6" width="40" height="10" rx="5" /></g>
+				<circle cx="58" cy="-30" r="22" fill="#ff3b3b" stroke="#111" stroke-width="5" />
+				<text x="58" y="-22" font-family="Arial Black, Arial" font-size="20" fill="#fff" text-anchor="middle">99+</text>
+			</g>
+		</defs>
+
+		<!-- The archive box -->
+		<g transform="translate(860 480)">
+			<rect x="-92" y="-24" width="184" height="150" rx="20" fill="#ff8a65" stroke="#111" stroke-width="8" />
+			<rect x="-108" y="-70" width="216" height="56" rx="16" fill="#ff7043" stroke="#111" stroke-width="8" />
+			<rect x="-34" y="20" width="68" height="22" rx="11" fill="#fff" stroke="#111" stroke-width="5" />
+		</g>
+
+		<!-- Chats flying into the box, and the pile still to go -->
+		<!-- motion lines behind the flying chats -->
+		<g stroke="#111" stroke-width="6" stroke-linecap="round" opacity="0.55">
+			<line x1="930" y1="318" x2="972" y2="330" /><line x1="924" y1="346" x2="960" y2="356" />
+			<line x1="1012" y1="226" x2="1050" y2="240" /><line x1="1006" y1="252" x2="1040" y2="264" />
+		</g>
+		<use href="#bubble" transform="translate(850 335) rotate(-14) scale(0.9)" />
+		<use href="#bubble" transform="translate(940 240) rotate(10) scale(0.8)" />
+		<use href="#bubble" transform="translate(965 600) rotate(-6)" />
+		<use href="#bubble" transform="translate(1060 630) rotate(8)" />
+		<use href="#bubble" transform="translate(1010 535) rotate(-12)" />
+
+		<!-- The stickman, sweeping -->
+		<g stroke="#111" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none">
+			<!-- broom handle, from his hands down to the pile -->
+			<line x1="1160" y1="330" x2="1010" y2="640" />
+			<!-- body, legs -->
+			<line x1="1180" y1="260" x2="1196" y2="470" />
+			<line x1="1196" y1="470" x2="1150" y2="660" />
+			<line x1="1196" y1="470" x2="1250" y2="650" />
+			<!-- arms, holding the broom -->
+			<polyline points="1182,300 1152,330 1137,377" />
+			<polyline points="1186,312 1168,392 1115,423" />
+		</g>
+		<!-- broom head -->
+		<path d="M980 628 l60 26 l-24 50 l-78 -30 z" fill="#b5803f" stroke="#111" stroke-width="7" stroke-linejoin="round" />
+		<g stroke="#111" stroke-width="4" stroke-linecap="round">
+			<line x1="952" y1="662" x2="944" y2="690" /><line x1="975" y1="672" x2="968" y2="700" /><line x1="998" y1="681" x2="992" y2="708" />
+		</g>
+		<!-- head: a happy, busy face -->
+		<circle cx="1176" cy="190" r="70" fill="#fff" stroke="#111" stroke-width="9" />
+		<circle cx="1150" cy="180" r="9" fill="#111" />
+		<circle cx="1196" cy="180" r="9" fill="#111" />
+		<path d="M1140 212 q36 30 72 0" fill="none" stroke="#111" stroke-width="8" stroke-linecap="round" />
+		<!-- a drop of effort -->
+		<path d="M1262 150 q-12 20 0 30 q12 -10 0 -30 z" fill="#4fc3f7" stroke="#111" stroke-width="5" />
+	</svg>
+</body>
+</html>

@@ -3,8 +3,8 @@
     python store/render.py           # the store images
     python store/render.py --icons   # first redraws the extension's icons in assets/icons/ from assets/logo.svg
 
-Writes store/media/: icon-128.png, screenshot-1.png to screenshot-5.png (1280x800), promo-small.png (440x280)
-and promo-marquee.png (1400x560). The screenshots show the real popup (html/index.html) with made-up chats, set
+Writes store/media/: icon-128.png, screenshot-1.png to screenshot-5.png (1280x800), promo-small.png (440x280),
+promo-marquee.png (1400x560) and youtube-thumbnail.png (1280x720, for the promo video on YouTube). The screenshots show the real popup (html/index.html) with made-up chats, set
 up by store/source/stub.js. Needs Chrome and Pillow. Chrome runs headless in a throwaway profile, so it never
 touches the browser you use.
 """
@@ -29,6 +29,7 @@ PAGES = [
     ("screenshot-5", 1280, 800),
     ("promo-small", 440, 280),
     ("promo-marquee", 1400, 560),
+    ("youtube-thumbnail", 1280, 720),
 ]
 
 

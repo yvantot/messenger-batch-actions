@@ -2,3 +2,7 @@
 *.zip
 # The demo video, made by store/video/record.py
 *.mp4
+
+# The official Messenger and Facebook logos, from Meta's Brand Resource Center: used in the promo tiles, not
+# republished here (see store/listing.md).
+store/logos/

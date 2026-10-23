@@ -67,6 +67,11 @@ body {
 		width: 30px;
 		height: 30px;
 	}
+	small {
+		color: var(--muted);
+		font-size: 15px;
+		font-weight: 600;
+	}
 }
 
 /* ---------- Messenger ---------- */

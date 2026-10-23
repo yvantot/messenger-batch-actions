@@ -4,16 +4,18 @@ Everything to fill in the [developer dashboard](https://chrome.google.com/websto
 update. The images are in `store/media/`. To redraw them after a popup change, run `python store/render.py`; after a
 logo change (`assets/logo.svg`), add `--icons` to redraw the extension's icons too.
 
+The promo tiles show Messenger's and Facebook's official logos, which aren't in git. Before redrawing the tiles, download
+both packs from Meta's Brand Resource Center ([Messenger icon](https://www.meta.com/brand/resources/facebook/messenger-icon/),
+[Facebook logo](https://www.meta.com/brand/resources/facebook/logo/)), accepting Meta's terms, and save the primary versions
+as `store/logos/messenger.svg` and `store/logos/facebook.png`. Without them the tiles leave the logos out. Meta's rules:
+use them exactly as provided, on white, with clear space of a quarter of their width, and no words beside them.
+
 ## Package
 
 1. Run `node tests/run.js`. Every test should pass.
-2. Commit, then build the zip from the committed files. It leaves out `tests/`, `rules/` (downloaded from GitHub, not
-   shipped), `store/` and the docs:
-
-   ```
-   git archive --format=zip -o messenger-batch-actions-1.1.0.zip HEAD manifest.json assets css html js
-   ```
-
+2. Commit, then run `python store/package.py`. It builds `messenger-batch-actions-1.1.0.zip` from the committed files
+   (leaving out `tests/`, `rules/`, `store/` and the docs) and checks that every path in the manifest and the popup is
+   in it exactly as written.
 3. In the dashboard, open the item, **Package > Upload new package**, and pick the zip.
 
 The listing's name and summary come from `manifest.json`:
@@ -26,31 +28,21 @@ The listing's name and summary come from `manifest.json`:
 **Description**
 
 ```
-Clean up your Messenger in a few clicks. Pick the chats, pick the action, and Messenger Batch Actions does the rest, on messenger.com and facebook.com/messages.
+Archive, mute, delete or leave many Messenger chats at once, on messenger.com and facebook.com/messages.
 
-Do any of these to many chats at once:
-• Archive and unarchive
-• Mute (messages, calls or both, for 15 minutes up to until you turn it back on) and unmute
-• Delete
-• Leave group chats
+• Archive old chats, and unarchive them
+• Mute noisy groups for 15 minutes, 8 hours, or until you turn them back on
+• Delete chats you don't need, or leave old group chats
 • Block or unblock
+• Search, select all, and load older chats
+• Safe mode does one chat at a time and checks each one; Fast mode does them all at once
 
-How it works:
-• Open Messenger, click the extension's icon, and pick chats from your list. Search, sort, select all, or load older chats.
-• Safe mode (the default) does one chat at a time and checks each one. You see the progress, which chats didn't work and why, and you can stop at any time.
-• Fast mode does every chat at once, for when you have a lot to clear.
-• It keeps going if you close the popup.
+Nothing about you or your chats leaves your browser. Free, with no ads.
 
-Ready for Messenger's changes: fixes for Messenger's page arrive from the project's GitHub page, without waiting for an update. If something still doesn't work, Report issues checks for fixes, or copies a report (with no chat names) for your email.
-
-Private: nothing about you or your chats leaves your device. No data is collected, sold or shared. Free, with no ads.
-
-New in 1.1: works with Messenger's latest page again, Safe and Fast modes, live progress, a bigger popup, and fixes that arrive without an update.
-
-Messenger Batch Actions isn't made by or affiliated with Meta.
+Messenger Batch Actions is not affiliated with or endorsed by Meta Platforms, Inc. Messenger and Facebook are trademarks of Meta Platforms, Inc.
 ```
 
-**Category:** keep the current one.
+**Category:** Social Media & Networking
 
 **Language:** English
 
@@ -64,29 +56,40 @@ Messenger Batch Actions isn't made by or affiliated with Meta.
 | Marquee promo tile (1400x560, optional) | `store/media/promo-marquee.png` |
 | Promo video | the YouTube link of `store/video/demo.mp4` (see below) |
 
-Remove the old screenshots before adding these, so the new popup is what people see.
+Remove the old screenshots before adding these. They show, in order: archiving many chats, Safe mode, Fast mode,
+muting, and search-and-delete on facebook.com/messages.
 
-**Promo video.** The store only takes a YouTube link. Upload `store/video/demo.mp4` (made by
-`python store/video/record.py`) to YouTube, as Public or Unlisted, then paste its link. On YouTube:
+**Promo video.** The store only takes a YouTube link. `store/video/demo.mp4` (44 s, 1080p, 30 fps, H.264, BT.709, no
+sound) is made by `python store/video/record.py`. Upload it to YouTube as Public or Unlisted, then paste its link here.
+On YouTube:
 
-- **Title:** Messenger Batch Actions: archive, mute or delete many Messenger chats at once
+- **Title:** Clean Up Messenger Fast: Archive, Mute & Delete Many Chats (Free)
+- **Thumbnail:** `store/media/youtube-thumbnail.png` (1280x720)
 - **Description:**
 
   ```
-  Messenger Batch Actions is a free Chrome extension that archives, unarchives, mutes, unmutes, deletes, leaves or blocks many Messenger chats at once, on messenger.com and facebook.com/messages.
+  Too many old chats on Messenger?
 
-  In this demo:
-  0:00 Mom's message is buried under old chats
-  0:04 Safe mode: archive old chats one by one
-  0:12 Fast mode: archive them all at once
-  0:19 Mute the noisy groups
-  0:29 Search, select all, delete
-  0:37 All clean
+  Messenger Batch Actions is a free Chrome extension that archives, mutes, deletes or leaves many Messenger chats at once, on messenger.com and facebook.com/messages.
 
-  Nothing about your chats leaves your device. Not made by or affiliated with Meta. The chats in the video are made up.
+  • Archive old chats, and unarchive them
+  • Mute noisy groups for as long as you like
+  • Delete chats you don't need, or leave old groups
+  • Block or unblock
+  • Search and select all, to clean up fast
+  • Safe mode does one chat at a time; Fast mode does them all at once
+
+  Get it free: https://chromewebstore.google.com/detail/fhedcmcogemcndkjkoaojkdggfmpbmkk
+
+  Nothing about you or your chats leaves your browser. The chats in the video are made up.
+
+  Messenger Batch Actions is not affiliated with or endorsed by Meta Platforms, Inc. Messenger and Facebook are trademarks of Meta Platforms, Inc.
+
+  #Messenger #Facebook #ChromeExtension #Productivity
   ```
 
-- **Audience:** not made for kids. The video has no sound; YouTube Studio's free Audio Library can add music.
+- No chapters: some scenes are shorter than the 10 seconds YouTube needs for one.
+- **Audience:** not made for kids. YouTube Studio's free Audio Library can add music.
 
 **Homepage URL:** https://github.com/yvantot/messenger-batch-actions
 
@@ -124,7 +127,7 @@ All code is in the package. The extension downloads one JSON file of CSS selecto
 
 Then tick all three statements: not sold to third parties, not used or transferred for purposes unrelated to the single purpose, not used to determine creditworthiness or for lending.
 
-**Privacy policy URL:** https://github.com/yvantot/messenger-batch-actions/blob/main/PRIVACY.md
+**Privacy policy URL:** https://github.com/yvantot/messenger-batch-actions/blob/main/PRIVACY.md (on GitHub already)
 
 ## Test instructions (for the reviewer)
 
@@ -135,3 +138,12 @@ Needs a Facebook account. Open messenger.com (or facebook.com/messages), click t
 ## Distribution
 
 Keep the current settings.
+
+## How the media is made
+
+- **Images:** HTML pages in `store/source/`, rendered at exact sizes by headless Chrome in a throwaway profile
+  (`store/render.py`) and saved as PNG without transparency. The screenshots and the marquee run the real popup with a
+  stand-in for the extension APIs (`stub.js`), fed made-up chats from `scenes.js`, which also draws the Messenger mock.
+- **Video:** `store/video/demo.html` is the stage; `stage.js` plays its timeline on a paused clock that
+  `store/video/record.py` moves one frame per screenshot (Playwright), piping the frames into ffmpeg. The real popup
+  runs there too, with `popup-stub.js`.
