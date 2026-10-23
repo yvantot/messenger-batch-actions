@@ -63,31 +63,52 @@ muting, and search-and-delete on facebook.com/messages.
 sound) is made by `python store/video/record.py`. Upload it to YouTube as Public or Unlisted, then paste its link here.
 On YouTube:
 
-- **Title:** Clean Up Messenger Fast: Archive, Mute & Delete Many Chats (Free)
+- **Title** (49 characters, so it isn't cut off on phones). It's what people search for, since a new channel gets
+  most of its views from search; the thumbnail already says "Clean up Messenger", so the title adds to it instead of
+  repeating it:
+
+  `How to Delete Many Messenger Chats at Once (Free)`
+
+  If YouTube Studio's **Test & Compare** is available (it needs advanced features turned on), test it against two
+  hooks; YouTube keeps whichever gets the most watch time:
+
+  - `Clean Up Your Messenger in Under a Minute (Free)`
+  - `Archive, Mute or Delete ALL Your Messenger Chats at Once`
+
+  Keep every claim true to the video (15 made-up chats, cleaned in under a minute): YouTube's spam policy treats a
+  title that promises something the video doesn't show as misleading.
 - **Thumbnail:** `store/media/youtube-thumbnail.png` (1280x720)
-- **Description:**
+- **Description.** Only the first line or two show before "Show more", so the hook and the link come first. The steps
+  repeat what people search for, in plain words. The first three hashtags show above the title; more than 15 and
+  YouTube ignores them all.
 
   ```
-  Too many old chats on Messenger?
+  Too many old Messenger chats? Clear them all in seconds, for free:
+  https://chromewebstore.google.com/detail/fhedcmcogemcndkjkoaojkdggfmpbmkk
 
-  Messenger Batch Actions is a free Chrome extension that archives, mutes, deletes or leaves many Messenger chats at once, on messenger.com and facebook.com/messages.
+  Messenger Batch Actions is a free Chrome extension for messenger.com and facebook.com/messages. Pick the chats, pick the action, done.
 
-  • Archive old chats, and unarchive them
-  • Mute noisy groups for as long as you like
-  • Delete chats you don't need, or leave old groups
+  What it does:
+  • Archive many chats at once, and unarchive them
+  • Mute noisy groups for 15 minutes, 8 hours, or until you turn them back on
+  • Delete old chats, or leave old group chats
   • Block or unblock
   • Search and select all, to clean up fast
   • Safe mode does one chat at a time; Fast mode does them all at once
 
-  Get it free: https://chromewebstore.google.com/detail/fhedcmcogemcndkjkoaojkdggfmpbmkk
+  How to delete many Messenger chats at once:
+  1. Add Messenger Batch Actions to Chrome from the link above
+  2. Open messenger.com or facebook.com/messages
+  3. Click the extension, pick the chats, and click Delete (or Archive, or Mute)
 
-  Nothing about you or your chats leaves your browser. The chats in the video are made up.
+  Nothing about you or your chats leaves your browser. The chats in this video are made up.
 
   Messenger Batch Actions is not affiliated with or endorsed by Meta Platforms, Inc. Messenger and Facebook are trademarks of Meta Platforms, Inc.
 
-  #Messenger #Facebook #ChromeExtension #Productivity
+  #Messenger #Facebook #ChromeExtension
   ```
 
+- **Pinned comment:** the same store link, with one line ("Free here, no sign-up:"), so it's one tap away on phones.
 - No chapters: some scenes are shorter than the 10 seconds YouTube needs for one.
 - **Audience:** not made for kids. YouTube Studio's free Audio Library can add music.
 
