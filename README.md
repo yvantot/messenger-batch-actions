@@ -1,5 +1,7 @@
 # Messenger Batch Actions
 
+[![Chrome Web Store users](https://img.shields.io/chrome-web-store/users/fhedcmcogemcndkjkoaojkdggfmpbmkk)](https://chromewebstore.google.com/detail/fhedcmcogemcndkjkoaojkdggfmpbmkk) [![Chrome Web Store rating](https://img.shields.io/chrome-web-store/rating/fhedcmcogemcndkjkoaojkdggfmpbmkk)](https://chromewebstore.google.com/detail/fhedcmcogemcndkjkoaojkdggfmpbmkk)
+
 Chrome extension that archives, unarchives, deletes, mutes, unmutes, blocks or leaves many Messenger chats at
 once, on messenger.com and facebook.com/messages.
 [Chrome Web Store](https://chromewebstore.google.com/detail/fhedcmcogemcndkjkoaojkdggfmpbmkk)
